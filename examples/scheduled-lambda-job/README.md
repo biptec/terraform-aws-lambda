@@ -1,7 +1,11 @@
 # Scheduled Lambda Job Example
 
-This folder shows an example of how to use the scheduled-lambda-job module to run a simple JavaScript function once
-per minute.
+This folder shows an example of how to use the scheduled-lambda-job module to deploy a Lambda function that 
+automatically runs once per minute.
+
+
+
+
 
 ## How do you run this example?
 
