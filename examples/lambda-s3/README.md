@@ -7,7 +7,7 @@ S3 and return the contents of that image base64 encoded.
 
 
 
-## How do you run this example?
+## How do you deploy this example?
 
 To apply the Terraform templates:
 
@@ -17,3 +17,41 @@ To apply the Terraform templates:
 1. Run `terraform get`.
 1. Run `terraform plan`.
 1. If the plan looks good, run `terraform apply`.
+
+
+
+
+## How do you test the Lambda function?
+
+There are two ways to test the Lambda function once it's deployed:
+
+1. [Test in AWS](#test-in-aws)
+1. [Test locally](#test-locally)
+
+
+### Test in AWS
+
+Open up the [AWS Console UI](https://console.aws.amazon.com/lambda/home), find the function, click the "Test" button, 
+and enter test data that looks something like this:
+   
+```json
+{
+  "aws_region": "us-east-1",
+  "s3_bucket": "lambda-s3-example-images-test",
+  "image_filename": "gruntwork-logo.png"
+}
+```
+    
+Click "Save and test" and AWS will show you the log output and returned value in the browser.
+
+
+### Test locally
+
+The code you write for a Lambda function is just regular code with a well-defined entrypoint (the "handler"), so you 
+can also run it locally by calling that entrypoint. [test_harness.py](python/test_harness.py) is an example of a simple 
+script you can run locally that will execute the handler, decode the base64-encoded image in the return value, and 
+write it to disk:
+
+```bash
+python python/test_harness.py --region us-east-1 --bucket lambda-s3-example-images-test --filename gruntwork-logo.png
+```
