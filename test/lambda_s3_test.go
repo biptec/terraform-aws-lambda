@@ -3,10 +3,6 @@ package test
 import (
 	"testing"
 	"github.com/gruntwork-io/terratest"
-	"github.com/aws/aws-sdk-go/service/lambda"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
 	"encoding/json"
 	terralog "github.com/gruntwork-io/terratest/log"
 	"log"
@@ -41,7 +37,7 @@ func TestLambdaS3(t *testing.T) {
 }
 
 func getBase64ImageDataFromResponsePayload(t *testing.T, payload []byte, logger *log.Logger) string {
-	logger.Printf("Parsing response payload from Lambda function to extract base64-encoded image data.")
+	logger.Println("Parsing response payload from Lambda function to extract base64-encoded image data.")
 
 	response := map[string]string{}
 	if err := json.Unmarshal(payload, &response); err != nil {
@@ -74,33 +70,4 @@ func createEventObjectPayloadForLambdaFunction(t *testing.T, terratestOptions *t
 	}
 
 	return out
-}
-
-func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) []byte {
-	logger.Printf("Invoking lambda function %s", functionName)
-
-	lambdaClient := lambda.New(session.New(), createAwsConfig(t, resourceCollection))
-
-	input := lambda.InvokeInput{
-		FunctionName: aws.String(functionName),
-		Payload: payload,
-	}
-
-	output, err := lambdaClient.Invoke(&input)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return output.Payload
-}
-
-func createAwsConfig(t *testing.T, resourceCollection *terratest.RandomResourceCollection) *aws.Config {
-	config := defaults.Get().Config.WithRegion(resourceCollection.AwsRegion)
-
-	_, err := config.Credentials.Get()
-	if err != nil {
-		t.Fatalf("Error finding AWS credentials (did you set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables?). Underlying error: %v", err)
-	}
-
-	return config
 }

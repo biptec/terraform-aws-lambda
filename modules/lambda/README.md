@@ -114,3 +114,6 @@ resource "aws_security_group_rule" "allow_all_outbound_to_vpc" {
   security_group_id = "${module.my_lambda_function.security_group_id}"
 }
 ```
+
+Check out the [lambda-vpc example](/examples/lambda-vpc) for working sample code. Make sure to note the Known Issues
+section in that example's README.

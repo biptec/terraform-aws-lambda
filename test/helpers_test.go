@@ -5,6 +5,11 @@ import (
 	"testing"
 	"fmt"
 	"io/ioutil"
+	"github.com/aws/aws-sdk-go/service/lambda"
+	"log"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/defaults"
 )
 
 func createBaseRandomResourceCollection(t *testing.T) *terratest.RandomResourceCollection {
@@ -58,4 +63,33 @@ func readFileAsString(t *testing.T, filePath string) string {
 		t.Fatalf("Failed to read file %s: %v", filePath, err)
 	}
 	return string(out)
+}
+
+func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) []byte {
+	logger.Printf("Invoking lambda function %s", functionName)
+
+	lambdaClient := lambda.New(session.New(), createAwsConfig(t, resourceCollection))
+
+	input := lambda.InvokeInput{
+		FunctionName: aws.String(functionName),
+		Payload: payload,
+	}
+
+	output, err := lambdaClient.Invoke(&input)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return output.Payload
+}
+
+func createAwsConfig(t *testing.T, resourceCollection *terratest.RandomResourceCollection) *aws.Config {
+	config := defaults.Get().Config.WithRegion(resourceCollection.AwsRegion)
+
+	_, err := config.Credentials.Get()
+	if err != nil {
+		t.Fatalf("Error finding AWS credentials (did you set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables?). Underlying error: %v", err)
+	}
+
+	return config
 }
