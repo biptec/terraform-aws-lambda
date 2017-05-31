@@ -1,8 +1,8 @@
-hash: 53ce8bfd6e1f2c65dbb4a6e6462c2450e955db74f8482e54a58071e5ed100655
-updated: 2017-05-31T18:09:39.147502162+01:00
+hash: 4a716592c624cca1b5630c318918cc1a2dddd94b0d1e2bd10e306fe5f7a84c21
+updated: 2017-05-31T18:19:35.839876583+01:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: a479673916dcc0f62674f085bb4112272b8d8560
+  version: 00fb2125993965df739fa3398b03bef3eb2e198f
   subpackages:
   - aws
   - aws/awserr
@@ -32,6 +32,7 @@ imports:
   - private/protocol/restjson
   - private/protocol/restxml
   - private/protocol/xml/xmlutil
+  - private/waiter
   - service/cloudwatchlogs
   - service/ec2
   - service/iam
@@ -40,7 +41,7 @@ imports:
   - service/sns
   - service/sts
 - name: github.com/gruntwork-io/terratest
-  version: ed788d28c4e7f797af1113f34ae386a5409594de
+  version: 1109a8bdaebfde366033b4881b81719b79b3b4f3
   repo: git@github.com:gruntwork-io/terratest
   vcs: git
   subpackages:
