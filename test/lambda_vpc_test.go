@@ -45,10 +45,10 @@ func getResponseFromPayload(t *testing.T, payload []byte, logger *log.Logger) st
 		t.Fatalf("Failed to unmarshal response payload from lambda function as map: %v", err)
 	}
 
-	response, hasResponse := response["response"]
+	responseStr, hasResponse := response["response"]
 	if !hasResponse {
 		t.Fatalf("Payload did not contain response data! %v", response)
 	}
 
-	return response
+	return responseStr
 }
