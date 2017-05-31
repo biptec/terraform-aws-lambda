@@ -1,8 +1,8 @@
-hash: 0bc12ea927573003a9fa6463f8ea679b4d299bc57fa2f11e71d4f32b1b11fcf8
-updated: 2017-05-31T18:00:29.139392048+01:00
+hash: 53ce8bfd6e1f2c65dbb4a6e6462c2450e955db74f8482e54a58071e5ed100655
+updated: 2017-05-31T18:09:39.147502162+01:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 00fb2125993965df739fa3398b03bef3eb2e198f
+  version: a479673916dcc0f62674f085bb4112272b8d8560
   subpackages:
   - aws
   - aws/awserr
@@ -32,7 +32,6 @@ imports:
   - private/protocol/restjson
   - private/protocol/restxml
   - private/protocol/xml/xmlutil
-  - private/waiter
   - service/cloudwatchlogs
   - service/ec2
   - service/iam
