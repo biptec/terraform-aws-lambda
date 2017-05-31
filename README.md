@@ -2,7 +2,9 @@
 
 This repo contains modules for deploying and managing [AWS Lambda](https://aws.amazon.com/lambda/) functions:
 
-* TODO
+* [lambda](/modules/lambda): A module for deploying and managing Lambda functions.
+* [scheduled-lambda-job](/modules/scheduled-lambda-job): A module that configures AWS to run a Lambda function on a
+  periodic basis.
 
 Click on each module above to see its documentation. Head over to the [examples folder](/examples) for examples.
 
