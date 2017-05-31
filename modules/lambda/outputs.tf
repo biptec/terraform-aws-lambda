@@ -1,3 +1,7 @@
+output "function_name" {
+  value = "${var.name}"
+}
+
 output "function_arn" {
   value = "${element(concat(aws_lambda_function.function_in_vpc.*.arn, aws_lambda_function.function_not_in_vpc.*.arn), 0)}"
 }
