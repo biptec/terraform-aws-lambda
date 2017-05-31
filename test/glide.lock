@@ -1,0 +1,62 @@
+hash: 2317456131dbdd3c095fb606f976ee414aac99027b1a4022d67a0b4bc14cbfbb
+updated: 2017-05-31T16:07:25.284835042+01:00
+imports:
+- name: github.com/gruntwork-io/terratest
+  version: ed788d28c4e7f797af1113f34ae386a5409594de
+  repo: git@github.com:gruntwork-io/terratest
+  vcs: git
+  subpackages:
+  - aws
+  - http
+  - log
+  - parallel
+  - shell
+  - terraform
+  - util
+testImports:
+- name: github.com/aws/aws-sdk-go
+  version: 00fb2125993965df739fa3398b03bef3eb2e198f
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - private/protocol
+  - private/protocol/ec2query
+  - private/protocol/json/jsonutil
+  - private/protocol/jsonrpc
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/restxml
+  - private/protocol/xml/xmlutil
+  - private/waiter
+  - service/cloudwatchlogs
+  - service/ec2
+  - service/iam
+  - service/s3
+  - service/sns
+  - service/sts
+- name: github.com/go-ini/ini
+  version: afbc45e87f3ba324c532d12c71918ef52e0fb194
+- name: github.com/jmespath/go-jmespath
+  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+- name: golang.org/x/crypto
+  version: 080743b21912ae11ad9222778a048b795a5aae00
+  subpackages:
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - ssh

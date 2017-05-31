@@ -1,0 +1,9 @@
+package: github.com/gruntwork-io/package-lambda/test
+owners:
+- name: Gruntwork
+  homepage: https://gruntwork.io
+import:
+- package: github.com/gruntwork-io/terratest
+  repo: git@github.com:gruntwork-io/terratest
+  vcs: git
+  version: v0.4.1
