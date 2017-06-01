@@ -54,7 +54,7 @@ module "ecs_cluster" {
 sources](https://www.terraform.io/docs/modules/sources.html)).*
 
 See the module's documentation and `vars.tf` file for all the parameters you can set. Run `terraform get -update` to
-pull the latest version of this module from this repo before runnin gthe standard  `terraform plan` and
+pull the latest version of this module from this repo before running the standard  `terraform plan` and
 `terraform apply` commands.
 
 
