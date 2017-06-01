@@ -1,0 +1,17 @@
+package: github.com/gruntwork-io/package-lambda/test
+owners:
+- name: Gruntwork
+  homepage: https://gruntwork.io
+import:
+- package: github.com/gruntwork-io/terratest
+  repo: git@github.com:gruntwork-io/terratest
+  vcs: git
+  version: v0.3.1
+- package: github.com/aws/aws-sdk-go
+  version: v1.6.27
+  subpackages:
+  - aws
+  - aws/defaults
+  - aws/session
+  - aws/service/lambda
+  - aws/service/cloudwatchlogs

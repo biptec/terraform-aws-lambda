@@ -21,11 +21,5 @@ out/
 # Go best practices dictate that libraries should not include the vendor directory
 vendor
 
-# Output from the build-go-binaries tests
-app_linux_amd64
-
-# Output from build-packer-artifact
-packer-build.log
-
 # Output from lambda job test
-lambda-job-example.zip
+*.zip
