@@ -1,3 +1,7 @@
+machine:
+  services:
+    - docker
+
 dependencies:
   override:
     # Install the gruntwork-module-circleci-helpers and use it to configure the build environment and run tests.
