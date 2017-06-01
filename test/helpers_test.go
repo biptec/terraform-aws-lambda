@@ -21,6 +21,7 @@ func createBaseRandomResourceCollection(t *testing.T) *terratest.RandomResourceC
 		"sa-east-1",
 		"ap-southeast-1",
 		"ap-south-1",
+		"ca-central-1", // Has lambda, but is incredibly slow, so tests often time out
 	}
 
 	randomResourceCollection, err := terratest.CreateRandomResourceCollection(resourceCollectionOptions)
