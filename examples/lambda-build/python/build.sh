@@ -21,4 +21,7 @@ echo "Copying $build_dir_container from Docker container $container_id to $build
 docker cp "$container_id:$build_dir_container" "$build_dir_host"
 
 echo "Removing container $container_id"
-docker rm "$container_id"
+# Due to a CircleCI limitation, docker rm operations will fail. This doesn't matter during a CI job, so for now, just
+# add the || true at the end to make sure the whole build doesn't fail as a result. For more info, see:
+# https://discuss.circleci.com/t/docker-error-removing-intermediate-container/70
+docker rm "$container_id" || true
