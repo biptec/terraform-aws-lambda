@@ -79,8 +79,3 @@ variable "subnet_ids" {
 #  description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
 #  default = ""
 #}
-
-variable "zip_dir" {
-  description = "A custom path where to create the zip file that contains your source code. Leave blank to use the default location, which will be inside var.source_folder. This module will upload this zip file to AWS lambda."
-  default = ""
-}

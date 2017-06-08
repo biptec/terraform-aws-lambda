@@ -81,7 +81,7 @@ resource "aws_lambda_function" "function_not_in_vpc" {
 data "archive_file" "source_code" {
   type = "zip"
   source_dir = "${var.source_dir}"
-  output_path = "${var.zip_dir == "" ? "${var.source_dir}/lambda.zip" : var.zip_dir}"
+  output_path = "${var.source_dir}/lambda.zip"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
