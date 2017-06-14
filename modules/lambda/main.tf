@@ -57,8 +57,8 @@ resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
   description = "${var.description}"
   publish = "${var.enable_versioning}"
 
-  filename = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_path : ""}"
-  source_code_hash = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_base64sha256 : ""}"
+  filename = "${join("", data.archive_file.source_code.*.output_path)}"
+  source_code_hash = "${join("", data.archive_file.source_code.*.output_base64sha256)}"
 
   runtime = "${var.runtime}"
   handler = "${var.handler}"
@@ -124,8 +124,8 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
   description = "${var.description}"
   publish = "${var.enable_versioning}"
 
-  filename = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_path : ""}"
-  source_code_hash = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_base64sha256 : ""}"
+  filename = "${join("", data.archive_file.source_code.*.output_path)}"
+  source_code_hash = "${join("", data.archive_file.source_code.*.output_base64sha256)}"
 
   runtime = "${var.runtime}"
   handler = "${var.handler}"
