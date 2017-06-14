@@ -5,18 +5,23 @@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE LAMBDA FUNCTION
-# There are two functions below, one in a VPC and one not, and which one gets created depends on var.run_in_vpc.
+# There are FOUR functions below, although only one will actually be created. This is because we have two optional
+# features--whether to run in a VPC or not and whether to find the deployment package in an S3 bucket or the local file
+# system--that are controlled via inline blocks, and there is no way to make inline blocks conditional in Terraform.
+# Therefore, to handle the 4 possible permutations, we copy/paste the same exact settings, other than these inline
+# blocks. Make sure to update all 4 permutations any time you make a change!!
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_lambda_function" "function_in_vpc" {
-  count = "${var.run_in_vpc}"
+resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
+  count = "${var.run_in_vpc * (1 - signum(length(var.source_dir)))}"
 
   function_name = "${var.name}"
   description = "${var.description}"
   publish = "${var.enable_versioning}"
 
-  filename = "${data.archive_file.source_code.output_path}"
-  source_code_hash = "${data.archive_file.source_code.output_base64sha256}"
+  s3_bucket = "${var.s3_bucket}"
+  s3_key = "${var.s3_key}"
+  s3_object_version = "${var.s3_object_version}"
 
   runtime = "${var.runtime}"
   handler = "${var.handler}"
@@ -45,15 +50,82 @@ resource "aws_lambda_function" "function_in_vpc" {
   # }
 }
 
-resource "aws_lambda_function" "function_not_in_vpc" {
-  count = "${1 - var.run_in_vpc}"
+resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
+  count = "${var.run_in_vpc * signum(length(var.source_dir))}"
 
   function_name = "${var.name}"
   description = "${var.description}"
   publish = "${var.enable_versioning}"
 
-  filename = "${data.archive_file.source_code.output_path}"
-  source_code_hash = "${data.archive_file.source_code.output_base64sha256}"
+  filename = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_path : ""}"
+  source_code_hash = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_base64sha256 : ""}"
+
+  runtime = "${var.runtime}"
+  handler = "${var.handler}"
+  timeout = "${var.timeout}"
+  memory_size = "${var.memory_size}"
+  kms_key_arn = "${var.kms_key_arn}"
+
+  role = "${aws_iam_role.lambda.arn}"
+  # We need this policy to be created before we try to create the lambda job, or you get an error about not having
+  # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
+  depends_on = ["aws_iam_role_policy.network_interfaces_for_lamda"]
+
+  vpc_config {
+    subnet_ids = ["${var.subnet_ids}"]
+    security_group_ids = ["${aws_security_group.lambda.*.id}"]
+  }
+
+  environment {
+    variables = "${var.environment_variables}"
+  }
+
+  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
+  #
+  # dead_letter_config {
+  #   target_arn = "${var.dead_letter_target_arn}"
+  # }
+}
+
+resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
+  count = "${(1 - var.run_in_vpc) * (1 - signum(length(var.source_dir)))}"
+
+  function_name = "${var.name}"
+  description = "${var.description}"
+  publish = "${var.enable_versioning}"
+
+  s3_bucket = "${var.s3_bucket}"
+  s3_key = "${var.s3_key}"
+  s3_object_version = "${var.s3_object_version}"
+
+  runtime = "${var.runtime}"
+  handler = "${var.handler}"
+  timeout = "${var.timeout}"
+  memory_size = "${var.memory_size}"
+  kms_key_arn = "${var.kms_key_arn}"
+
+  role = "${aws_iam_role.lambda.arn}"
+
+  environment {
+    variables = "${var.environment_variables}"
+  }
+
+  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
+  #
+  # dead_letter_config {
+  #   target_arn = "${var.dead_letter_target_arn}"
+  # }
+}
+
+resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
+  count = "${(1 - var.run_in_vpc) * signum(length(var.source_dir))}"
+
+  function_name = "${var.name}"
+  description = "${var.description}"
+  publish = "${var.enable_versioning}"
+
+  filename = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_path : ""}"
+  source_code_hash = "${length(var.source_dir) > 0 ? data.archive_file.source_code.*.output_base64sha256 : ""}"
 
   runtime = "${var.runtime}"
   handler = "${var.handler}"
@@ -79,6 +151,7 @@ resource "aws_lambda_function" "function_not_in_vpc" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "archive_file" "source_code" {
+  count = "${signum(length(var.source_dir))}"
   type = "zip"
   source_dir = "${var.source_dir}"
   output_path = "${var.source_dir}/lambda.zip"

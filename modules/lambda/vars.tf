@@ -8,7 +8,23 @@ variable "name" {
 }
 
 variable "source_dir" {
-  description = "The path to the directory that contains your Lambda function source code. This code will be zipped up and uploaded to Lambda."
+  description = "The path to the directory that contains your Lambda function source code. This code will be zipped up and uploaded to Lambda as your deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+  default = ""
+}
+
+variable "s3_bucket" {
+  description = "An S3 bucket location containing the function's deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+  default = ""
+}
+
+variable "s3_key" {
+  description = "The path within var.s3_bucket where the deployment package is located. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+  default = ""
+}
+
+variable "s3_object_version" {
+  description = "The version of the path in var.s3_key to use as the deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+  default = ""
 }
 
 variable "runtime" {
