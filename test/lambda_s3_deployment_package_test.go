@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"github.com/stretchr/testify/assert"
+	"reflect"
 )
 
 func TestLambdaS3DeploymentPackage(t *testing.T) {
@@ -29,7 +29,7 @@ func TestLambdaS3DeploymentPackage(t *testing.T) {
 	event, requestPayload := createEventForEchoLambdaFunction(t, resourceCollection, logger)
 	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, resourceCollection, logger)
 
-	assertResponsePayloadUnchanged(t, event, responsePayload)
+	assertResponsePayloadUnchanged(t, event, responsePayload, logger)
 }
 
 func createEventForEchoLambdaFunction(t *testing.T, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) (map[string]string, []byte) {
@@ -47,10 +47,14 @@ func createEventForEchoLambdaFunction(t *testing.T, resourceCollection *terrates
 	return event, out
 }
 
-func assertResponsePayloadUnchanged(t *testing.T, expectedEvent map[string]string, responsePayload []byte) {
+func assertResponsePayloadUnchanged(t *testing.T, expectedEvent map[string]string, responsePayload []byte, logger *log.Logger) {
 	actualEvent := map[string]string{}
 	if err := json.Unmarshal(responsePayload, &actualEvent); err != nil {
 		t.Fatalf("Failed to parse response as JSON: %v", err)
 	}
-	assert.Equal(t, expectedEvent, actualEvent, "Expected function to echo back the request payload unchanged")
+	if reflect.DeepEqual(expectedEvent, actualEvent) {
+		logger.Printf("Got expected event back: %v", actualEvent)
+	} else {
+		t.Fatalf("Expected to get back event %v but got %v", expectedEvent, actualEvent)
+	}
 }
