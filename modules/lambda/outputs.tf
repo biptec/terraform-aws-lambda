@@ -3,7 +3,7 @@ output "function_name" {
 }
 
 output "function_arn" {
-  value = "${element(concat(aws_lambda_function.function_in_vpc.*.arn, aws_lambda_function.function_not_in_vpc.*.arn), 0)}"
+  value = "${element(concat(aws_lambda_function.function_in_vpc_code_in_s3.*.arn, aws_lambda_function.function_in_vpc_code_in_local_folder.*.arn, aws_lambda_function.function_not_in_vpc_code_in_s3.*.arn, aws_lambda_function.function_in_vpc_code_in_s3.*.arn, aws_lambda_function.function_in_vpc_code_in_local_folder.*.arn, aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.arn), 0)}"
 }
 
 output "iam_role_id" {
@@ -20,13 +20,13 @@ output "security_group_id" {
 }
 
 output "invoke_arn" {
-  value = "${element(concat(aws_lambda_function.function_in_vpc.*.invoke_arn, aws_lambda_function.function_not_in_vpc.*.invoke_arn), 0)}"
+  value = "${element(concat(aws_lambda_function.function_in_vpc_code_in_s3.*.invoke_arn, aws_lambda_function.function_in_vpc_code_in_local_folder.*.invoke_arn, aws_lambda_function.function_not_in_vpc_code_in_s3.*.invoke_arn, aws_lambda_function.function_in_vpc_code_in_s3.*.invoke_arn, aws_lambda_function.function_in_vpc_code_in_local_folder.*.invoke_arn, aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.invoke_arn), 0)}"
 }
 
 output "qualified_arn" {
-  value = "${element(concat(aws_lambda_function.function_in_vpc.*.qualified_arn, aws_lambda_function.function_not_in_vpc.*.qualified_arn), 0)}"
+  value = "${element(concat(aws_lambda_function.function_in_vpc_code_in_s3.*.qualified_arn, aws_lambda_function.function_in_vpc_code_in_local_folder.*.qualified_arn, aws_lambda_function.function_not_in_vpc_code_in_s3.*.qualified_arn, aws_lambda_function.function_in_vpc_code_in_s3.*.qualified_arn, aws_lambda_function.function_in_vpc_code_in_local_folder.*.qualified_arn, aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.qualified_arn), 0)}"
 }
 
 output "version" {
-  value = "${element(concat(aws_lambda_function.function_in_vpc.*.version, aws_lambda_function.function_not_in_vpc.*.version), 0)}"
+  value = "${element(concat(aws_lambda_function.function_in_vpc_code_in_s3.*.version, aws_lambda_function.function_in_vpc_code_in_local_folder.*.version, aws_lambda_function.function_not_in_vpc_code_in_s3.*.version, aws_lambda_function.function_in_vpc_code_in_s3.*.version, aws_lambda_function.function_in_vpc_code_in_local_folder.*.version, aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.version), 0)}"
 }
