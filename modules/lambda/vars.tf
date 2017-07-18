@@ -9,22 +9,22 @@ variable "name" {
 
 variable "source_dir" {
   description = "The path to the directory that contains your Lambda function source code. This code will be zipped up and uploaded to Lambda as your deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
-  default = ""
+  default     = ""
 }
 
 variable "s3_bucket" {
   description = "An S3 bucket location containing the function's deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
-  default = ""
+  default     = ""
 }
 
 variable "s3_key" {
   description = "The path within var.s3_bucket where the deployment package is located. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
-  default = ""
+  default     = ""
 }
 
 variable "s3_object_version" {
   description = "The version of the path in var.s3_key to use as the deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
-  default = ""
+  default     = ""
 }
 
 variable "runtime" {
@@ -50,12 +50,13 @@ variable "memory_size" {
 
 variable "description" {
   description = "A description of what the Lambda function does."
-  default = ""
+  default     = ""
 }
 
 variable "environment_variables" {
   description = "A map of environment variables to pass to the Lambda function. AWS will automatically encrypt these with KMS and decrypt them when running the function."
-  type = "map"
+  type        = "map"
+
   # Lambda does not permit you to pass it an empty map of environment variables, so our default value has to contain
   # this totally useless placeholder.
   default = {
@@ -65,28 +66,33 @@ variable "environment_variables" {
 
 variable "enable_versioning" {
   description = "Set to true to enable versioning for this Lambda function. This allows you to use aliases to refer to execute different versions of the function in different environments. Note that an alternative way to run Lambda functions in multiple environments is to version your Terraform code."
-  default = false
+  default     = false
 }
 
 variable "kms_key_arn" {
   description = "A custom KMS key to use to encrypt and decrypt Lambda function environment variables. Leave it blank to use the default KMS key provided in your AWS account."
-  default = ""
+  default     = ""
 }
 
 variable "run_in_vpc" {
   description = "Set to true to give your Lambda function access to resources within a VPC."
-  default = false
+  default     = false
 }
 
 variable "vpc_id" {
   description = "The ID of the VPC the Lambda function should be able to access. Only used if var.run_in_vpc is true."
-  default = ""
+  default     = ""
 }
 
 variable "subnet_ids" {
   description = "A list of subnet IDs the Lambda function should be able to access within your VPC. Only used if var.run_in_vpc is true."
-  type = "list"
-  default = []
+  type        = "list"
+  default     = []
+}
+
+variable "skip_zip" {
+  description = "Set to true to skip zip archive creation, instead use source_dir variable to point to a pregenerated zip archive."
+  default     = false
 }
 
 # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
@@ -95,3 +101,4 @@ variable "subnet_ids" {
 #  description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
 #  default = ""
 #}
+

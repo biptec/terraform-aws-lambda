@@ -16,26 +16,27 @@ resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
   count = "${var.run_in_vpc * (1 - signum(length(var.source_dir)))}"
 
   function_name = "${var.name}"
-  description = "${var.description}"
-  publish = "${var.enable_versioning}"
+  description   = "${var.description}"
+  publish       = "${var.enable_versioning}"
 
-  s3_bucket = "${var.s3_bucket}"
-  s3_key = "${var.s3_key}"
+  s3_bucket         = "${var.s3_bucket}"
+  s3_key            = "${var.s3_key}"
   s3_object_version = "${var.s3_object_version}"
 
-  runtime = "${var.runtime}"
-  handler = "${var.handler}"
-  timeout = "${var.timeout}"
+  runtime     = "${var.runtime}"
+  handler     = "${var.handler}"
+  timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
 
   role = "${aws_iam_role.lambda.arn}"
+
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
   # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
   depends_on = ["aws_iam_role_policy.network_interfaces_for_lamda"]
 
   vpc_config {
-    subnet_ids = ["${var.subnet_ids}"]
+    subnet_ids         = ["${var.subnet_ids}"]
     security_group_ids = ["${aws_security_group.lambda.*.id}"]
   }
 
@@ -54,25 +55,26 @@ resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
   count = "${var.run_in_vpc * signum(length(var.source_dir))}"
 
   function_name = "${var.name}"
-  description = "${var.description}"
-  publish = "${var.enable_versioning}"
+  description   = "${var.description}"
+  publish       = "${var.enable_versioning}"
 
-  filename = "${join("", data.archive_file.source_code.*.output_path)}"
-  source_code_hash = "${join("", data.archive_file.source_code.*.output_base64sha256)}"
+  filename = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
+  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_dir)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
 
-  runtime = "${var.runtime}"
-  handler = "${var.handler}"
-  timeout = "${var.timeout}"
+  runtime     = "${var.runtime}"
+  handler     = "${var.handler}"
+  timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
 
   role = "${aws_iam_role.lambda.arn}"
+
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
   # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
   depends_on = ["aws_iam_role_policy.network_interfaces_for_lamda"]
 
   vpc_config {
-    subnet_ids = ["${var.subnet_ids}"]
+    subnet_ids         = ["${var.subnet_ids}"]
     security_group_ids = ["${aws_security_group.lambda.*.id}"]
   }
 
@@ -91,16 +93,16 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
   count = "${(1 - var.run_in_vpc) * (1 - signum(length(var.source_dir)))}"
 
   function_name = "${var.name}"
-  description = "${var.description}"
-  publish = "${var.enable_versioning}"
+  description   = "${var.description}"
+  publish       = "${var.enable_versioning}"
 
-  s3_bucket = "${var.s3_bucket}"
-  s3_key = "${var.s3_key}"
+  s3_bucket         = "${var.s3_bucket}"
+  s3_key            = "${var.s3_key}"
   s3_object_version = "${var.s3_object_version}"
 
-  runtime = "${var.runtime}"
-  handler = "${var.handler}"
-  timeout = "${var.timeout}"
+  runtime     = "${var.runtime}"
+  handler     = "${var.handler}"
+  timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
 
@@ -121,15 +123,15 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
   count = "${(1 - var.run_in_vpc) * signum(length(var.source_dir))}"
 
   function_name = "${var.name}"
-  description = "${var.description}"
-  publish = "${var.enable_versioning}"
+  description   = "${var.description}"
+  publish       = "${var.enable_versioning}"
 
-  filename = "${join("", data.archive_file.source_code.*.output_path)}"
-  source_code_hash = "${join("", data.archive_file.source_code.*.output_base64sha256)}"
+  filename = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
+  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_dir)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
 
-  runtime = "${var.runtime}"
-  handler = "${var.handler}"
-  timeout = "${var.timeout}"
+  runtime     = "${var.runtime}"
+  handler     = "${var.handler}"
+  timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
 
@@ -151,9 +153,9 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "archive_file" "source_code" {
-  count = "${signum(length(var.source_dir))}"
-  type = "zip"
-  source_dir = "${var.source_dir}"
+  count       = "${var.skip_zip ? 0 : signum(length(var.source_dir))}"
+  type        = "zip"
+  source_dir  = "${var.source_dir}"
   output_path = "${var.source_dir}/lambda.zip"
 }
 
@@ -167,9 +169,9 @@ data "archive_file" "source_code" {
 resource "aws_security_group" "lambda" {
   count = "${var.run_in_vpc}"
 
-  name = "${var.name}-lambda"
+  name        = "${var.name}-lambda"
   description = "Security group for the lambda function ${var.name}"
-  vpc_id = "${var.vpc_id}"
+  vpc_id      = "${var.vpc_id}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -179,17 +181,17 @@ resource "aws_security_group" "lambda" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "lambda" {
-  name = "${var.name}"
+  name               = "${var.name}"
   assume_role_policy = "${data.aws_iam_policy_document.lambda_role.json}"
 }
 
 data "aws_iam_policy_document" "lambda_role" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["lambda.amazonaws.com"]
     }
   }
@@ -200,19 +202,21 @@ data "aws_iam_policy_document" "lambda_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "logging_for_lambda" {
-  name = "${var.name}-logging"
-  role = "${aws_iam_role.lambda.id}"
+  name   = "${var.name}-logging"
+  role   = "${aws_iam_role.lambda.id}"
   policy = "${data.aws_iam_policy_document.logging_for_lambda.json}"
 }
 
 data "aws_iam_policy_document" "logging_for_lambda" {
   statement {
     effect = "Allow"
+
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
-      "logs:PutLogEvents"
+      "logs:PutLogEvents",
     ]
+
     resources = ["arn:aws:logs:*:*:*"]
   }
 }
@@ -225,8 +229,8 @@ data "aws_iam_policy_document" "logging_for_lambda" {
 resource "aws_iam_role_policy" "network_interfaces_for_lamda" {
   count = "${var.run_in_vpc}"
 
-  name = "${var.name}-network-interfaces"
-  role = "${aws_iam_role.lambda.id}"
+  name   = "${var.name}-network-interfaces"
+  role   = "${aws_iam_role.lambda.id}"
   policy = "${element(data.aws_iam_policy_document.network_interfaces_for_lamda.*.json, count.index)}"
 }
 
@@ -235,14 +239,16 @@ data "aws_iam_policy_document" "network_interfaces_for_lamda" {
 
   statement {
     effect = "Allow"
+
     actions = [
       "ec2:CreateNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DeleteNetworkInterface",
       "ec2:DetachNetworkInterface",
       "ec2:ModifyNetworkInterfaceAttribute",
-      "ec2:ResetNetworkInterfaceAttribute"
+      "ec2:ResetNetworkInterfaceAttribute",
     ]
+
     resources = ["*"]
   }
 }
