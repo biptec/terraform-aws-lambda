@@ -60,9 +60,9 @@ resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
 
   #filename = "${join("", data.archive_file.source_code.*.output_path)}"
   #source_code_hash = "${join("", data.archive_file.source_code.*.output_base64sha256)}"
-  filename = "${var.skip_zip ? var.source_code : join("", data.archive_file.source_code.*.output_path)}"
+  filename = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
 
-  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_code)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
+  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_dir)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
@@ -131,9 +131,8 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
 
   #filename = "${join("", data.archive_file.source_code.*.output_path)}"
   #source_code_hash = "${join("", data.archive_file.source_code.*.output_base64sha256)}"
-  filename = "${var.skip_zip ? var.source_code : join("", data.archive_file.source_code.*.output_path)}"
-
-  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_code)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
+  filename = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
+  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_dir)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
