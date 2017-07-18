@@ -58,8 +58,8 @@ resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
   description   = "${var.description}"
   publish       = "${var.enable_versioning}"
 
-  filename = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
-  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_dir)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
+  filename = "${data.template_file.zip_file_path.rendered}"
+  source_code_hash = "${data.template_file.source_code_hash.rendered}"
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
@@ -126,8 +126,8 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
   description   = "${var.description}"
   publish       = "${var.enable_versioning}"
 
-  filename = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
-  source_code_hash = "${var.skip_zip ? base64sha256(file(var.source_dir)) : join("", data.archive_file.source_code.*.output_base64sha256)}"
+  filename = "${data.template_file.zip_file_path.rendered}"
+  source_code_hash = "${data.template_file.source_code_hash.rendered}"
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
@@ -150,6 +150,7 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ZIP UP THE LAMBDA FUNCTION SOURCE CODE
+# Note that if var.skip_zip is true, then we assume that var.source_dir is the path to an already-zipped file.
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "archive_file" "source_code" {
@@ -157,6 +158,19 @@ data "archive_file" "source_code" {
   type        = "zip"
   source_dir  = "${var.source_dir}"
   output_path = "${var.source_dir}/lambda.zip"
+}
+
+data "template_file" "hash_from_source_code_zip" {
+  count = "${var.skip_zip}"
+  template = "${base64sha256(file(var.source_dir))}"
+}
+
+data "template_file" "source_code_hash" {
+  template = "${var.skip_zip ? join(",", data.template_file.hash_from_source_code_zip.*.rendered) : join(",", data.archive_file.source_code.*.output_base64sha256)}"
+}
+
+data "template_file" "zip_file_path" {
+  template = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
