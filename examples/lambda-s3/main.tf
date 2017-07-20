@@ -21,7 +21,7 @@ module "lambda_s3" {
   name = "${var.name}"
   description = "An example of how to process images in S3 with Lambda"
 
-  source_dir = "${path.module}/python"
+  source_path = "${path.module}/python"
   runtime = "python2.7"
   handler = "index.handler"
 

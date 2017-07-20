@@ -13,7 +13,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
-  count = "${var.run_in_vpc * (1 - signum(length(var.source_dir)))}"
+  count = "${var.run_in_vpc * (1 - signum(length(var.source_path)))}"
 
   function_name = "${var.name}"
   description   = "${var.description}"
@@ -52,7 +52,7 @@ resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
 }
 
 resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
-  count = "${var.run_in_vpc * signum(length(var.source_dir))}"
+  count = "${var.run_in_vpc * signum(length(var.source_path))}"
 
   function_name = "${var.name}"
   description   = "${var.description}"
@@ -90,7 +90,7 @@ resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
 }
 
 resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
-  count = "${(1 - var.run_in_vpc) * (1 - signum(length(var.source_dir)))}"
+  count = "${(1 - var.run_in_vpc) * (1 - signum(length(var.source_path)))}"
 
   function_name = "${var.name}"
   description   = "${var.description}"
@@ -120,7 +120,7 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
 }
 
 resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
-  count = "${(1 - var.run_in_vpc) * signum(length(var.source_dir))}"
+  count = "${(1 - var.run_in_vpc) * signum(length(var.source_path))}"
 
   function_name = "${var.name}"
   description   = "${var.description}"
@@ -150,19 +150,19 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ZIP UP THE LAMBDA FUNCTION SOURCE CODE
-# Note that if var.skip_zip is true, then we assume that var.source_dir is the path to an already-zipped file.
+# Note that if var.skip_zip is true, then we assume that var.source_path is the path to an already-zipped file.
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "archive_file" "source_code" {
-  count       = "${var.skip_zip ? 0 : signum(length(var.source_dir))}"
+  count       = "${var.skip_zip ? 0 : signum(length(var.source_path))}"
   type        = "zip"
-  source_dir  = "${var.source_dir}"
-  output_path = "${var.source_dir}/lambda.zip"
+  source_dir  = "${var.source_path}"
+  output_path = "${var.source_path}/lambda.zip"
 }
 
 data "template_file" "hash_from_source_code_zip" {
   count = "${var.skip_zip}"
-  template = "${base64sha256(file(var.source_dir))}"
+  template = "${base64sha256(file(var.source_path))}"
 }
 
 data "template_file" "source_code_hash" {
@@ -170,7 +170,7 @@ data "template_file" "source_code_hash" {
 }
 
 data "template_file" "zip_file_path" {
-  template = "${var.skip_zip ? var.source_dir : join("", data.archive_file.source_code.*.output_path)}"
+  template = "${var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

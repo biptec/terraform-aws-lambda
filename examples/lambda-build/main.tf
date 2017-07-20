@@ -20,9 +20,9 @@ module "lambda_s3" {
   name = "${var.name}"
   description = "An example of how to process images in S3 with Lambda"
 
-  # Notice how the source_dir is set to python/build, which doesn't initially exist. That's because you need to run
+  # Notice how the source_path is set to python/build, which doesn't initially exist. That's because you need to run
   # the build process for the code before deploying it with Terraform. See README.md for instructions.
-  source_dir = "${path.module}/python/build"
+  source_path = "${path.module}/python/build"
   runtime = "python2.7"
 
   # The Lambda zip file will be extracted into /var/task. Our zip contains two folders: a src folder with our Lambda

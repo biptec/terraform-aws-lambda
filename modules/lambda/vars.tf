@@ -7,23 +7,23 @@ variable "name" {
   description = "The name of the Lambda function. Used to namespace all resources created by this module."
 }
 
-variable "source_dir" {
-  description = "The path to the directory that contains your Lambda function source code. This code will be zipped up and uploaded to Lambda as your deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+variable "source_path" {
+  description = "The path to the directory that contains your Lambda function source code. This code will be zipped up and uploaded to Lambda as your deployment package. If var.skip_zip is set to true, then this is assumed to be the path to an already-zipped file, and it will be uploaded directly to Lambda as a deployment package. Exactly one of var.source_path or the var.s3_xxx variables must be specified."
   default     = ""
 }
 
 variable "s3_bucket" {
-  description = "An S3 bucket location containing the function's deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+  description = "An S3 bucket location containing the function's deployment package. Exactly one of var.source_path or the var.s3_xxx variables must be specified."
   default     = ""
 }
 
 variable "s3_key" {
-  description = "The path within var.s3_bucket where the deployment package is located. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+  description = "The path within var.s3_bucket where the deployment package is located. Exactly one of var.source_path or the var.s3_xxx variables must be specified."
   default     = ""
 }
 
 variable "s3_object_version" {
-  description = "The version of the path in var.s3_key to use as the deployment package. Exactly one of var.source_dir or the var.s3_xxx variables must be specified."
+  description = "The version of the path in var.s3_key to use as the deployment package. Exactly one of var.source_path or the var.s3_xxx variables must be specified."
   default     = ""
 }
 
@@ -91,7 +91,7 @@ variable "subnet_ids" {
 }
 
 variable "skip_zip" {
-  description = "Set to true to skip zip archive creation, instead use source_dir variable to point to a pregenerated zip archive."
+  description = "Set to true to skip zip archive creation and assume that var.source_path points to a pregenerated zip archive."
   default     = false
 }
 

@@ -21,7 +21,7 @@ module "lambda_function" {
   name = "${var.name}"
   description = "An example of how to process images in S3 with Lambda"
 
-  source_dir = "${path.module}/javascript"
+  source_path = "${path.module}/javascript"
   runtime = "nodejs6.10"
   handler = "index.handler"
 
