@@ -16,7 +16,7 @@ output "iam_role_arn" {
 
 // Will only show up if var.run_in_vpc is true
 output "security_group_id" {
-  value = "${aws_security_group.lambda.id}"
+  value = "${element(concat(aws_security_group.lambda.*.id, list("")), 0)}"
 }
 
 output "invoke_arn" {
