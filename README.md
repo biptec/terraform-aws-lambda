@@ -2,6 +2,7 @@
 
 This repo contains modules for deploying and managing [AWS Lambda](https://aws.amazon.com/lambda/) functions:
 
+* [edge-lambda](/modules/edge-lambda): A module for deploying and managing Lambda@Edge functions.
 * [lambda](/modules/lambda): A module for deploying and managing Lambda functions.
 * [scheduled-lambda-job](/modules/scheduled-lambda-job): A module that configures AWS to run a Lambda function on a
   periodic basis.
