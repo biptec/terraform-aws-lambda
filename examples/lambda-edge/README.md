@@ -31,7 +31,8 @@ There are two ways to test the Lambda function once it's deployed:
 ### Test in AWS
 
 Open up the [AWS Console UI](https://console.aws.amazon.com/lambda/home), find the function, click the "Test" button,
-and enter test data that looks something like this:
+and enter test data that looks something like this (full format available in the
+[Lambda@Edge Event Structure documentation](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-event-structure.html)):
 
 ```json
 {
