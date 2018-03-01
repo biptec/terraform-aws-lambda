@@ -92,6 +92,10 @@ data "template_file" "zip_file_path" {
 # CREATE AN IAM ROLE FOR THE LAMBDA FUNCTION
 # This controls what resources the lambda function can access and who can trigger the lambda job. We export the id of
 # the IAM role so users can add custom permissions.
+#
+# TODO: It looks like you need some IAM permissions to be able to trigger this function from CloudFront. Not clear
+# if those permissions go here or in the CloudFront trigger:
+# https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html#lambda-edge-permissions
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "lambda" {

@@ -17,6 +17,8 @@ To apply the Terraform templates:
 1. Run `terraform plan`.
 1. If the plan looks good, run `terraform apply`.
 
+We do not yet have the CloudFront trigger automated, so once the example is deployed, you'll have to [configure
+the trigger manually](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-add-triggers.html).
 
 
 
