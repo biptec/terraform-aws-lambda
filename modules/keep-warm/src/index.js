@@ -28,7 +28,7 @@ function invokeFunction(functionArn, event, lambda, concurrency) {
   const params = {
     FunctionName: functionArn,
     InvocationType: 'Event',
-    Payload: event,
+    Payload: JSON.stringify(event),
   };
 
   console.log(`Invoking Lambda function ${functionArn} asynchronously ${concurrency} times.`);
