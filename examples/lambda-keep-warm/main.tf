@@ -50,7 +50,7 @@ module "keep_warm" {
   # pass to those functions
   function_to_event_map = {
     "${module.lambda_example_1.function_arn}" = "${var.lambda_example_1_event}"
-    "${module.lambda_example_2.function_arn}" = "${var.lambda_example_1_event}"
+    "${module.lambda_example_2.function_arn}" = "${var.lambda_example_2_event}"
   }
 
   schedule_expression = "${var.schedule_expression}"
