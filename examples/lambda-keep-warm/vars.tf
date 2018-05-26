@@ -13,26 +13,6 @@ variable "name" {
   default     = "keep-warm-example"
 }
 
-variable "lambda_example_1_event" {
-  description = "The event object to send to lambda_example_1 each time it's invoked by the keep-warm module."
-  type        = "map"
-  default     = {
-    foo = "bar"
-  }
-}
-
-variable "lambda_example_2_event" {
-  description = "The event object to send to lambda_example_2 each time it's invoked by the keep-warm module."
-  type        = "map"
-  default     = {
-    example = {
-      a = 1
-      b = 2
-      c = 3
-    }
-  }
-}
-
 variable "schedule_expression" {
   description = "An expression that defines how often to the keep-warm module should invoke the example Lambda functions. For example, cron(0 20 * * ? *) or rate(5 minutes)."
   default     = "rate(5 minutes)"

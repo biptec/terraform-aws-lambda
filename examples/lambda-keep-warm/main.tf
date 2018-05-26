@@ -49,8 +49,17 @@ module "keep_warm" {
   # This is a map where the keys are the ARNs of Lambda functions to invoke and the values are the event objects to
   # pass to those functions
   function_to_event_map = {
-    "${module.lambda_example_1.function_arn}" = "${var.lambda_example_1_event}"
-    "${module.lambda_example_2.function_arn}" = "${var.lambda_example_2_event}"
+    "${module.lambda_example_1.function_arn}" = {
+      foo = "bar"
+    }
+
+    "${module.lambda_example_2.function_arn}" = {
+      example = {
+        a = 1
+        b = 1
+        c = 1
+      }
+    }
   }
 
   schedule_expression = "${var.schedule_expression}"
