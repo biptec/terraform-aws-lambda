@@ -40,9 +40,9 @@
 [[projects]]
   name = "github.com/gruntwork-io/terratest"
   packages = ["modules/aws","modules/logger","modules/random","modules/retry","modules/shell","modules/terraform"]
-  revision = "90bd558ee45b40e744226ce54baef5646cc3c2f1"
+  revision = "9ca40d792450cbd93f1c62901b685378ed701564"
   source = "git@github.com:gruntwork-io/terratest"
-  version = "v0.9.3"
+  version = "v0.9.4"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"
