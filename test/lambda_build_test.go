@@ -17,7 +17,7 @@ func TestLambdaBuild(t *testing.T) {
 	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/lambda-build")
 	defer terraform.Destroy(t, terraformOptions)
 
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
 
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 	requestPayload := createPayloadFormLambdaBuildFunction(t)

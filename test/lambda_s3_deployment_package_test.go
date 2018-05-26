@@ -15,7 +15,7 @@ func TestLambdaS3DeploymentPackage(t *testing.T) {
 	terraformOptions, awsRegion, uniqueId := createBaseTerraformOptions(t, "../examples/lambda-s3-deployment-package")
 	defer terraform.Destroy(t, terraformOptions)
 
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
 
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 

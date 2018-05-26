@@ -13,7 +13,7 @@ func TestLambdaS3(t *testing.T) {
 	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/lambda-s3")
 	defer terraform.Destroy(t, terraformOptions)
 
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
 
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 	requestPayload := createEventObjectPayloadForLambdaFunction(t, terraformOptions, awsRegion)

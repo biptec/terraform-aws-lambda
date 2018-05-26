@@ -20,7 +20,7 @@ func TestLambdaKeepWarm(t *testing.T) {
 
 	defer terraform.Destroy(t, terraformOptions)
 
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
 
 	logger.Logf(t, "Sleeping for a minute to give the warm-up function time to run the first time")
 	time.Sleep(1 * time.Minute)
