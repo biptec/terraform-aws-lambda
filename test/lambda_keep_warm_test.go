@@ -46,7 +46,7 @@ type KeepWarmExampleResponse struct {
 	InvocationCount int
 }
 
-func assertFunctionHasBeenInvoked(t *testing.T, functionNameOutput string, terraformOptions *terraform.Options, awsRegion string, expectedInvocations int) {
+func assertFunctionHasBeenInvoked(t *testing.T, functionNameOutput string, terraformOptions *terraform.Options, awsRegion string, maxInvocations int) {
 	request := map[string]string{"type": "test"}
 	requestPayload, err := json.Marshal(request)
 	if err != nil {
@@ -63,7 +63,7 @@ func assertFunctionHasBeenInvoked(t *testing.T, functionNameOutput string, terra
 		t.Fatal(err)
 	}
 
-	if response.InvocationCount != expectedInvocations {
-		t.Fatalf("Expected function %s to have been invoked %d times, but got %d invocations", lambdaFunctionName, expectedInvocations, response.InvocationCount)
+	if response.InvocationCount > maxInvocations {
+		t.Fatalf("Expected function %s to have been invoked at least %d times, but got %d invocations", lambdaFunctionName, maxInvocations, response.InvocationCount)
 	}
 }
