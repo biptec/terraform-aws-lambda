@@ -5,9 +5,11 @@
 const crypto = require('crypto');
 const functionId = crypto.randomBytes(16).toString("hex");
 
+// Count how many times this container has been called
 let invocationCount = 0;
 
-const sleepTimeMs = 3000;
+// Sleep this long before completing a request
+const sleepTimeMs = 5000;
 
 // The main entrypoint for this Lambda function. All it does is log the event object, sleep for a little while (this
 // is mainly useful at test time so we can verify the concurrency settings work as expected) and return an object with
