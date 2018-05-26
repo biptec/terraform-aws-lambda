@@ -64,6 +64,6 @@ func assertFunctionHasBeenInvoked(t *testing.T, functionNameOutput string, terra
 	}
 
 	if response.InvocationCount != expectedInvocations {
-		t.Fatalf("Expected function %s to have been invoked at least %d times, but got only %d invocations", lambdaFunctionName, expectedInvocations, response.InvocationCount)
+		t.Fatalf("Expected function %s to have been invoked %d times, but got %d invocations", lambdaFunctionName, expectedInvocations, response.InvocationCount)
 	}
 }
