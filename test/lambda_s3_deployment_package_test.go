@@ -1,43 +1,36 @@
 package test
 
 import (
-	"github.com/gruntwork-io/terratest"
 	"testing"
-	terralog "github.com/gruntwork-io/terratest/log"
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 func TestLambdaS3DeploymentPackage(t *testing.T) {
 	t.Parallel()
 
-	testName := "TestLambdaS3DeploymentPackage"
-	logger := terralog.NewLogger(testName)
+	terraformOptions, awsRegion, uniqueId := createBaseTerraformOptions(t, "../examples/lambda-s3-deployment-package")
+	defer terraform.Destroy(t, terraformOptions)
 
-	resourceCollection := createBaseRandomResourceCollection(t)
-	terratestOptions := createBaseTerratestOptions(testName, "../examples/lambda-s3-deployment-package", resourceCollection)
-	defer terratest.Destroy(terratestOptions, resourceCollection)
+	terraform.Apply(t, terraformOptions)
 
-	if _, err := terratest.Apply(terratestOptions); err != nil {
-		t.Fatalf("Failed to apply templates in %s due to error: %s\n", terratestOptions.TemplatePath, err.Error())
-	}
+	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 
-	functionName := getRequiredOutput(t, "function_name", terratestOptions)
+	event, requestPayload := createEventForEchoLambdaFunction(t, uniqueId)
+	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
 
-	event, requestPayload := createEventForEchoLambdaFunction(t, resourceCollection, logger)
-	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, resourceCollection, logger)
-
-	assertResponsePayloadUnchanged(t, event, responsePayload, logger)
+	assertResponsePayloadUnchanged(t, event, responsePayload)
 }
 
-func createEventForEchoLambdaFunction(t *testing.T, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) (map[string]string, []byte) {
+func createEventForEchoLambdaFunction(t *testing.T, uniqueId string) (map[string]string, []byte) {
 	event := map[string]string{
-		"text": fmt.Sprintf("test-%s", resourceCollection.UniqueId),
+		"text": fmt.Sprintf("test-%s", uniqueId),
 	}
 
-	logger.Printf("Using event object %v as request payload to Lambda function.", event)
+	logger.Logf(t, "Using event object %v as request payload to Lambda function.", event)
 
 	out, err := json.Marshal(event)
 	if err != nil {
@@ -47,13 +40,13 @@ func createEventForEchoLambdaFunction(t *testing.T, resourceCollection *terrates
 	return event, out
 }
 
-func assertResponsePayloadUnchanged(t *testing.T, expectedEvent map[string]string, responsePayload []byte, logger *log.Logger) {
+func assertResponsePayloadUnchanged(t *testing.T, expectedEvent map[string]string, responsePayload []byte) {
 	actualEvent := map[string]string{}
 	if err := json.Unmarshal(responsePayload, &actualEvent); err != nil {
 		t.Fatalf("Failed to parse response as JSON: %v", err)
 	}
 	if reflect.DeepEqual(expectedEvent, actualEvent) {
-		logger.Printf("Got expected event back: %v", actualEvent)
+		logger.Logf(t, "Got expected event back: %v", actualEvent)
 	} else {
 		t.Fatalf("Expected to get back event %v but got %v", expectedEvent, actualEvent)
 	}

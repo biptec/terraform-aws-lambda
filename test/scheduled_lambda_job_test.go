@@ -2,17 +2,14 @@ package test
 
 import (
 	"testing"
-	"github.com/gruntwork-io/terratest"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"fmt"
-	"github.com/gruntwork-io/terratest/util"
-	terraaws "github.com/gruntwork-io/terratest/aws"
-	terralog "github.com/gruntwork-io/terratest/log"
 	"time"
-	"log"
 	"strings"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/retry"
+	terraws "github.com/gruntwork-io/terratest/modules/aws"
 )
 
 const EXPECTED_LOG_ENTRY = "lambda-job-example completed successfully"
@@ -20,32 +17,29 @@ const EXPECTED_LOG_ENTRY = "lambda-job-example completed successfully"
 func TestScheduledLambdaJob(t *testing.T) {
 	t.Parallel()
 
-	testName := "TestScheduledLambdaJob"
-	logger := terralog.NewLogger(testName)
+	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/scheduled-lambda-job")
+	defer terraform.Destroy(t, terraformOptions)
 
-	resourceCollection := createBaseRandomResourceCollection(t)
-	terratestOptions := createBaseTerratestOptions(testName, "../examples/scheduled-lambda-job", resourceCollection)
-	defer terratest.Destroy(terratestOptions, resourceCollection)
+	terraform.Apply(t, terraformOptions)
 
-	if _, err := terratest.Apply(terratestOptions); err != nil {
-		t.Fatalf("Failed to apply templates in %s due to error: %s\n", terratestOptions.TemplatePath, err.Error())
-	}
-
-	checkLogsForSuccessfulLambdaJobExecution(t, terratestOptions, resourceCollection, logger)
+	checkLogsForSuccessfulLambdaJobExecution(t, terraformOptions, awsRegion)
 }
 
-func checkLogsForSuccessfulLambdaJobExecution(t *testing.T, terratestOptions *terratest.TerratestOptions, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) {
-	lambdaFunctionName := getRequiredOutput(t, "function_name", terratestOptions)
+func checkLogsForSuccessfulLambdaJobExecution(t *testing.T, terraformOptions *terraform.Options, awsRegion string) {
+	lambdaFunctionName := terraform.OutputRequired(t, terraformOptions, "function_name")
+	description := "Looking in CloudWatch Logs to see if the lambda job executed successfully"
+	maxRetries := 10
+	timeBetweenRetries := 30 * time.Second
 
-	_, err := util.DoWithRetry("Looking in CloudWatch Logs to see if the lambda job executed successfully", 10, 30 * time.Second, logger, func() (string, error) {
-		logStreamNames, err := getLambdaJobLogStreamNames(t, lambdaFunctionName, resourceCollection)
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		logStreamNames, err := getLambdaJobLogStreamNames(t, lambdaFunctionName, awsRegion)
 		if err != nil {
 			return "", err
 		}
 
 		logGroupName := formatLogGroupName(lambdaFunctionName)
 		for _, logStreamName := range logStreamNames {
-			entries, err := terraaws.GetCloudWatchLogEntries(resourceCollection.AwsRegion, logStreamName, logGroupName)
+			entries, err := terraws.GetCloudWatchLogEntriesE(t, awsRegion, logStreamName, logGroupName)
 			if err != nil {
 				return "", err
 			}
@@ -59,14 +53,15 @@ func checkLogsForSuccessfulLambdaJobExecution(t *testing.T, terratestOptions *te
 
 		return "", fmt.Errorf("Did not find entry '%s' in CloudWatch Logs", EXPECTED_LOG_ENTRY)
 	})
-
-	if err != nil {
-		t.Fatalf("Failed to find entry '%s' in CloudWatch logs after 10 retries: %v", EXPECTED_LOG_ENTRY, err)
-	}
 }
 
-func getLambdaJobLogStreamNames(t *testing.T, lambdaFunctionName string, resourceCollection *terratest.RandomResourceCollection) ([]string, error) {
-	svc := cloudwatchlogs.New(session.New(), aws.NewConfig().WithRegion(resourceCollection.AwsRegion))
+func getLambdaJobLogStreamNames(t *testing.T, lambdaFunctionName string, awsRegion string) ([]string, error) {
+	sess, err := terraws.NewAuthenticatedSession(awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	svc := cloudwatchlogs.New(sess)
 	input := cloudwatchlogs.DescribeLogStreamsInput{LogGroupName: aws.String(formatLogGroupName(lambdaFunctionName))}
 
 	output, err := svc.DescribeLogStreams(&input)

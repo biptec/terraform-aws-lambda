@@ -1,32 +1,25 @@
 package test
 
 import (
-	"github.com/gruntwork-io/terratest"
 	"testing"
-	terralog "github.com/gruntwork-io/terratest/log"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 func TestLambdaEdge(t *testing.T) {
 	t.Parallel()
 
-	testName := "TestLambdaEdge"
-	logger := terralog.NewLogger(testName)
+	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/lambda-edge")
+	defer terraform.Destroy(t, terraformOptions)
 
-	resourceCollection := createBaseRandomResourceCollection(t)
-	terratestOptions := createBaseTerratestOptions(testName, "../examples/lambda-edge", resourceCollection)
-	defer terratest.Destroy(terratestOptions, resourceCollection)
+	terraform.Apply(t, terraformOptions)
 
-	if _, err := terratest.Apply(terratestOptions); err != nil {
-		t.Fatalf("Failed to apply templates in %s due to error: %s\n", terratestOptions.TemplatePath, err.Error())
-	}
-
-	functionName := getRequiredOutput(t, "function_name", terratestOptions)
+	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 	requestPayload := []byte(mockCloudfrontTriggerEvent)
 
-	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, resourceCollection, logger)
+	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
 	assertValidLambdaEdgeResponsePayload(t, responsePayload)
 }
 
