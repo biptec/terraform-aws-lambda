@@ -30,6 +30,10 @@ func createBaseTerraformOptions(t *testing.T, templatePath string) (*terraform.O
 			"aws_region": awsRegion,
 			"name": fmt.Sprintf("%s-%s", t.Name(), uniqueId),
 		},
+		RetryableTerraformErrors: map[string]string{
+			"the KMS key is invalid for CreateGrant": "https://github.com/terraform-providers/terraform-provider-aws/issues/4633",
+		},
+		MaxRetries: 3,
 	}
 
 	return &terraformOptions, awsRegion, uniqueId
