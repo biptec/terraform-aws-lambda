@@ -44,11 +44,19 @@ func readFileAsString(t *testing.T, filePath string) string {
 }
 
 func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, awsRegion string) []byte {
+	out, err := triggerLambdaFunctionE(t, functionName, payload, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, awsRegion string) ([]byte, error) {
 	logger.Logf(t, "Invoking lambda function %s", functionName)
 
 	sess, err := terraws.NewAuthenticatedSession(awsRegion)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	lambdaClient := lambda.New(sess)
@@ -60,8 +68,8 @@ func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, aw
 
 	output, err := lambdaClient.Invoke(&input)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	return output.Payload
+	return output.Payload, nil
 }

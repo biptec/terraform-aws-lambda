@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/retry"
+	"fmt"
+	"time"
 )
 
 func TestLambdaS3(t *testing.T) {
@@ -18,8 +21,20 @@ func TestLambdaS3(t *testing.T) {
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 	requestPayload := createEventObjectPayloadForLambdaFunction(t, terraformOptions, awsRegion)
 
-	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
-	actualBase64Data := getBase64ImageDataFromResponsePayload(t, responsePayload)
+	description := fmt.Sprintf("Invoke function %s", functionName)
+	maxRetries := 5
+	timeBetweenRetries := 5 * time.Second
+
+	// The IAM permissions to read the S3 bucket can take a little while to propagate, so retry a few times
+	actualBase64Data := retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		responsePayload, err := triggerLambdaFunctionE(t, functionName, requestPayload, awsRegion)
+		if err != nil {
+			return "", err
+		}
+
+		return getBase64ImageDataFromResponsePayload(t, responsePayload)
+	})
+
 	expectedBase64Data := readFileAsString(t, "gruntwork-logo.base64.txt")
 
 	if expectedBase64Data == actualBase64Data {
@@ -29,20 +44,20 @@ func TestLambdaS3(t *testing.T) {
 	}
 }
 
-func getBase64ImageDataFromResponsePayload(t *testing.T, payload []byte) string {
+func getBase64ImageDataFromResponsePayload(t *testing.T, payload []byte) (string, error) {
 	logger.Logf(t, "Parsing response payload from Lambda function to extract base64-encoded image data.")
 
 	response := map[string]string{}
 	if err := json.Unmarshal(payload, &response); err != nil {
-		t.Fatalf("Failed to unmarshal response payload '%s' from lambda function as map: %v", string(payload), err)
+		return "", err
 	}
 
 	base64Data, hasBase64Data := response["image_base64"]
 	if !hasBase64Data {
-		t.Fatalf("Response payload did not contain base 64 image data! %v", response)
+		return "", fmt.Errorf("Response payload did not contain base 64 image data! %v", response)
 	}
 
-	return base64Data
+	return base64Data, nil
 }
 
 func createEventObjectPayloadForLambdaFunction(t *testing.T, terraformOptions *terraform.Options, awsRegion string) []byte {
