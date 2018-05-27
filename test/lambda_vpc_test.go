@@ -16,7 +16,7 @@ import (
 //	logger := terralog.NewLogger(testName)
 //
 //	resourceCollection := createBaseRandomResourceCollection(t)
-//	terratestOptions := createBaseTerratestOptions(testName, "../examples/lambda-vpc", resourceCollection)
+//	terratestOptions := createBaseTerraformOptions(testName, "../examples/lambda-vpc", resourceCollection)
 //	defer terratest.Destroy(terratestOptions, resourceCollection)
 //
 //	terratestOptions.Vars["vpc_name"] = fmt.Sprintf("lambda-vpc-example-%s", resourceCollection.UniqueId)

@@ -1,61 +1,42 @@
 package test
 
 import (
-	"github.com/gruntwork-io/terratest"
 	"testing"
 	"fmt"
 	"io/ioutil"
 	"github.com/aws/aws-sdk-go/service/lambda"
-	"log"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	terraws "github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-func createBaseRandomResourceCollection(t *testing.T) *terratest.RandomResourceCollection {
-	resourceCollectionOptions := terratest.NewRandomResourceCollectionOptions()
-
-	// Explicitly forbid regions where Lambda is not available.
-	resourceCollectionOptions.ForbiddenRegions = []string{
-		"us-west-1",
-		"sa-east-1",
-		"ap-southeast-1",
-		"ap-south-1",
-		"ca-central-1", // Has lambda, but is incredibly slow, so tests often time out
-	}
-
-	randomResourceCollection, err := terratest.CreateRandomResourceCollection(resourceCollectionOptions)
-	if err != nil {
-		t.Fatalf("Failed to create random resource collection: %s\n", err.Error())
-	}
-
-	return randomResourceCollection
+var regionsWithoutLambda = []string{
+	"us-west-1",
+	"sa-east-1",
+	"ap-southeast-1",
+	"ap-south-1",
+	"ca-central-1", // Has lambda, but is incredibly slow, so tests often time out
 }
 
-func createBaseTerratestOptions(testName string, templatePath string, randomResourceCollection *terratest.RandomResourceCollection) *terratest.TerratestOptions {
-	terratestOptions := terratest.NewTerratestOptions()
+func createBaseTerraformOptions(t *testing.T, templatePath string) (*terraform.Options, string, string) {
+	awsRegion := terraws.GetRandomRegion(t, nil, regionsWithoutLambda)
+	uniqueId := random.UniqueId()
 
-	terratestOptions.UniqueId = randomResourceCollection.UniqueId
-	terratestOptions.TemplatePath = templatePath
-	terratestOptions.TestName = testName
-
-	terratestOptions.Vars = map[string]interface{} {
-		"aws_region": randomResourceCollection.AwsRegion,
-		"name": fmt.Sprintf("%s-%s", testName, randomResourceCollection.UniqueId),
+	terraformOptions := terraform.Options{
+		TerraformDir: templatePath,
+		Vars: map[string]interface{}{
+			"aws_region": awsRegion,
+			"name": fmt.Sprintf("%s-%s", t.Name(), uniqueId),
+		},
+		RetryableTerraformErrors: map[string]string{
+			"the KMS key is invalid for CreateGrant": "https://github.com/terraform-providers/terraform-provider-aws/issues/4633",
+		},
+		MaxRetries: 3,
 	}
 
-	return terratestOptions
-}
-
-func getRequiredOutput(t *testing.T, outputName string, terratestOptions *terratest.TerratestOptions) string {
-	output, err := terratest.Output(terratestOptions, outputName)
-	if err != nil {
-		t.Fatalf("Failed to get output %s: %v", outputName, err)
-	}
-	if output == "" {
-		t.Fatalf("Got an empty string for required output %s", outputName)
-	}
-	return output
+	return &terraformOptions, awsRegion, uniqueId
 }
 
 func readFileAsString(t *testing.T, filePath string) string {
@@ -66,10 +47,23 @@ func readFileAsString(t *testing.T, filePath string) string {
 	return string(out)
 }
 
-func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) []byte {
-	logger.Printf("Invoking lambda function %s", functionName)
+func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, awsRegion string) []byte {
+	out, err := triggerLambdaFunctionE(t, functionName, payload, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
 
-	lambdaClient := lambda.New(session.New(), createAwsConfig(t, resourceCollection))
+func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, awsRegion string) ([]byte, error) {
+	logger.Logf(t, "Invoking lambda function %s", functionName)
+
+	sess, err := terraws.NewAuthenticatedSession(awsRegion)
+	if err != nil {
+		return nil, err
+	}
+
+	lambdaClient := lambda.New(sess)
 
 	input := lambda.InvokeInput{
 		FunctionName: aws.String(functionName),
@@ -78,19 +72,8 @@ func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, re
 
 	output, err := lambdaClient.Invoke(&input)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	return output.Payload
-}
-
-func createAwsConfig(t *testing.T, resourceCollection *terratest.RandomResourceCollection) *aws.Config {
-	config := defaults.Get().Config.WithRegion(resourceCollection.AwsRegion)
-
-	_, err := config.Credentials.Get()
-	if err != nil {
-		t.Fatalf("Error finding AWS credentials (did you set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables?). Underlying error: %v", err)
-	}
-
-	return config
+	return output.Payload, nil
 }

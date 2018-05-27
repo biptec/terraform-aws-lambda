@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","private/protocol","private/protocol/ec2query","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","private/waiter","service/acm","service/cloudwatchlogs","service/ec2","service/iam","service/kms","service/lambda","service/s3","service/sns","service/sqs","service/sts"]
-  revision = "00fb2125993965df739fa3398b03bef3eb2e198f"
-  version = "v1.6.27"
+  revision = "82eadef012f77590875babb177c60878727821c0"
+  version = "v1.12.74"
 
 [[projects]]
   name = "github.com/boombuler/barcode"
@@ -39,10 +39,10 @@
 
 [[projects]]
   name = "github.com/gruntwork-io/terratest"
-  packages = [".","aws","http","log","parallel","shell","terraform","util"]
-  revision = "8b768cd5f5af5eabd86ed220e61852263cdd044d"
+  packages = ["modules/aws","modules/logger","modules/random","modules/retry","modules/shell","modules/terraform"]
+  revision = "9ca40d792450cbd93f1c62901b685378ed701564"
   source = "git@github.com:gruntwork-io/terratest"
-  version = "v0.7.2"
+  version = "v0.9.4"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"

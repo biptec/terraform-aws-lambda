@@ -1,54 +1,43 @@
 package test
 
 import (
-	"github.com/gruntwork-io/terratest"
 	"testing"
-	terralog "github.com/gruntwork-io/terratest/log"
-	"github.com/gruntwork-io/terratest/shell"
-	"log"
 	"encoding/json"
 	"strings"
+	"github.com/gruntwork-io/terratest/modules/shell"
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 func TestLambdaBuild(t *testing.T) {
 	t.Parallel()
 
-	testName := "TestLambdaBuild"
-	logger := terralog.NewLogger(testName)
+	buildDeploymentPackage(t)
 
-	buildDeploymentPackage(t, logger)
+	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/lambda-build")
+	defer terraform.Destroy(t, terraformOptions)
 
-	resourceCollection := createBaseRandomResourceCollection(t)
-	terratestOptions := createBaseTerratestOptions(testName, "../examples/lambda-build", resourceCollection)
-	defer terratest.Destroy(terratestOptions, resourceCollection)
+	terraform.InitAndApply(t, terraformOptions)
 
-	if _, err := terratest.Apply(terratestOptions); err != nil {
-		t.Fatalf("Failed to apply templates in %s due to error: %s\n", terratestOptions.TemplatePath, err.Error())
-	}
+	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
+	requestPayload := createPayloadFormLambdaBuildFunction(t)
 
-	functionName := getRequiredOutput(t, "function_name", terratestOptions)
-	requestPayload := createPayloadFormLambdaBuildFunction(t, logger)
-
-	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, resourceCollection, logger)
+	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
 	assertValidResponsePayload(t, responsePayload)
 }
 
-func buildDeploymentPackage(t *testing.T, logger *log.Logger) {
-	logger.Println("Building deployment package for lambda-build example")
-
+func buildDeploymentPackage(t *testing.T) {
+	logger.Logf(t, "Building deployment package for lambda-build example")
 	cmd := shell.Command{Command: "../examples/lambda-build/python/build.sh"}
-
-	if err := shell.RunCommand(cmd, logger); err != nil {
-		t.Fatalf("Failed to build deployment package: %v", err)
-	}
+	shell.RunCommand(t, cmd)
 }
 
-func createPayloadFormLambdaBuildFunction(t *testing.T, logger *log.Logger) []byte {
+func createPayloadFormLambdaBuildFunction(t *testing.T) []byte {
 	event := map[string]string{
 		"url": "http://www.example.com",
 	}
 
-	logger.Printf("Using event object %v as request payload to Lambda function.", event)
+	logger.Logf(t, "Using event object %v as request payload to Lambda function.", event)
 
 	out, err := json.Marshal(event)
 	if err != nil {
