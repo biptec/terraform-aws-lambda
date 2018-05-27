@@ -79,7 +79,7 @@ func assertFunctionsHaveBeenInvoked(t *testing.T, awsRegion string, terraformOpt
 
 	description := "Count invocations based on DynamoDB data"
 	maxRetries := 3
-	timeBetweenRetries := 2 * time.Second
+	timeBetweenRetries := 5 * time.Second
 
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
 		dynamoDbData, err := getDataFromDynamoDb(t, dynamoDBTableName, awsRegion)
