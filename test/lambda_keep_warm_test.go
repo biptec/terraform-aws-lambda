@@ -11,6 +11,7 @@ import (
 	"time"
 	"fmt"
 	"github.com/gruntwork-io/terratest/modules/retry"
+	"strings"
 )
 
 const savedAwsRegion = "AwsRegion"
@@ -31,6 +32,15 @@ func testLambdaKeepWarm(t *testing.T, concurrency int) {
 	defer test_structure.RunTestStage(t, "teardown", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, testFolder)
 		terraform.Destroy(t, terraformOptions)
+	})
+
+	defer test_structure.RunTestStage(t, "logs", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, testFolder)
+		awsRegion := test_structure.LoadString(t, testFolder, savedAwsRegion)
+
+		printLogs(t, terraformOptions, awsRegion, "keep_warm_function_name")
+		printLogs(t, terraformOptions, awsRegion, "lambda_example_1_function_name")
+		printLogs(t, terraformOptions, awsRegion, "lambda_example_2_function_name")
 	})
 
 	test_structure.RunTestStage(t, "setup", func() {
@@ -70,6 +80,36 @@ func testLambdaKeepWarm(t *testing.T, concurrency int) {
 
 		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 3)
 	})
+}
+
+func printLogs(t *testing.T, terraformOptions *terraform.Options, awsRegion string, functionNameOutput string) {
+	lambdaFunctionName := terraform.OutputRequired(t, terraformOptions, functionNameOutput)
+	description := fmt.Sprintf("Getting CloudWatch Logs for lambda function %s", lambdaFunctionName)
+	maxRetries := 10
+	timeBetweenRetries := 30 * time.Second
+
+	logs := retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		logStreamNames, err := getLambdaJobLogStreamNames(t, lambdaFunctionName, awsRegion)
+		if err != nil {
+			return "", err
+		}
+
+		logEntries := []string{}
+
+		logGroupName := formatLogGroupName(lambdaFunctionName)
+		for _, logStreamName := range logStreamNames {
+			entries, err := terraws.GetCloudWatchLogEntriesE(t, awsRegion, logStreamName, logGroupName)
+			if err != nil {
+				return "", err
+			}
+
+			logEntries = append(logEntries, entries...)
+		}
+
+		return strings.Join(logEntries, ""), nil
+	})
+
+	logger.Logf(t, "Log entries for lambda function %s:\n\n%s\n\n", lambdaFunctionName, logs)
 }
 
 func assertFunctionsHaveBeenInvoked(t *testing.T, awsRegion string, terraformOptions *terraform.Options, concurrency int, expectedNumInvocations int) {
