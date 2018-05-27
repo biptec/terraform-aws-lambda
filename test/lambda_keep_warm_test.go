@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"strings"
+	"github.com/stretchr/testify/assert"
 )
 
 const savedAwsRegion = "AwsRegion"
@@ -38,6 +39,9 @@ func testLambdaKeepWarm(t *testing.T, concurrency int) {
 		terraformOptions := test_structure.LoadTerraformOptions(t, testFolder)
 		awsRegion := test_structure.LoadString(t, testFolder, savedAwsRegion)
 
+		logger.Logf(t, "Sleeping for a little while to allow log data to propagate")
+		time.Sleep(30 * time.Second)
+
 		printLogs(t, terraformOptions, awsRegion, "keep_warm_function_name")
 		printLogs(t, terraformOptions, awsRegion, "lambda_example_1_function_name")
 		printLogs(t, terraformOptions, awsRegion, "lambda_example_2_function_name")
@@ -61,24 +65,13 @@ func testLambdaKeepWarm(t *testing.T, concurrency int) {
 		terraformOptions := test_structure.LoadTerraformOptions(t, testFolder)
 		awsRegion := test_structure.LoadString(t, testFolder, savedAwsRegion)
 
-		// The warm-up function runs once per minute and the lambda functions it invokes take ~5 seconds to run, so
-		// sleep a little over a minute to make sure everything is completed by the time we run our checks
-		sleepTime := 65 * time.Second
+		// The Lambda functions should run once per minute, and they take 5 seconds to execute, so adding some buffer,
+		// we should never have to wait longer than this
+		maxWaitTime := 75 * time.Second
 
-		logger.Logf(t, "Sleeping for %s to give the warm-up function time to run the first time", sleepTime)
-		time.Sleep(sleepTime)
-
-		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 1)
-
-		logger.Logf(t, "Sleeping for %s to give the warm-up function time to run the second time", sleepTime)
-		time.Sleep(sleepTime)
-
-		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 2)
-
-		logger.Logf(t, "Sleeping for %s to give the warm-up function time to run the third time", sleepTime)
-		time.Sleep(sleepTime)
-
-		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 3)
+		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 1, maxWaitTime)
+		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 2, maxWaitTime)
+		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 3, maxWaitTime)
 	})
 }
 
@@ -112,28 +105,40 @@ func printLogs(t *testing.T, terraformOptions *terraform.Options, awsRegion stri
 	logger.Logf(t, "Log entries for lambda function %s:\n\n%s\n\n", lambdaFunctionName, logs)
 }
 
-func assertFunctionsHaveBeenInvoked(t *testing.T, awsRegion string, terraformOptions *terraform.Options, concurrency int, expectedNumInvocations int) {
+func assertFunctionsHaveBeenInvoked(t *testing.T, awsRegion string, terraformOptions *terraform.Options, concurrency int, expectedNumInvocations int, maxTimeElapsed time.Duration) {
 	dynamoDBTableName := terraform.OutputRequired(t, terraformOptions, "dynamodb_table_name")
 	functionName1 := terraform.OutputRequired(t, terraformOptions, "lambda_example_1_function_name")
 	functionName2 := terraform.OutputRequired(t, terraformOptions, "lambda_example_2_function_name")
 
-	dynamoDbData, err := getDataFromDynamoDb(t, dynamoDBTableName, awsRegion)
-	if err != nil {
-		t.Fatal(err)
-	}
+	description := fmt.Sprintf("Wait until Lambda functions %s and %s have been invoked %d times each", functionName1, functionName2, expectedNumInvocations)
+	maxRetries := 36
+	timeBetweenRetries := 5 * time.Second
+	start := time.Now()
 
-	invocationsFunc1, invocationsFunc2 := countInvocations(t, dynamoDbData, functionName1, functionName2)
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		dynamoDbData, err := getDataFromDynamoDb(t, dynamoDBTableName, awsRegion)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	logger.Logf(t, "Invocations for %s: %v", functionName1, invocationsFunc1)
-	logger.Logf(t, "Invocations for %s: %v", functionName2, invocationsFunc2)
+		invocationsFunc1, invocationsFunc2 := countInvocations(t, dynamoDbData, functionName1, functionName2)
 
-	if err := invocationsFunc1.Validate(concurrency, expectedNumInvocations); err != nil {
-		t.Fatal(err)
-	}
+		logger.Logf(t, "Invocations for %s: %v", functionName1, invocationsFunc1)
+		logger.Logf(t, "Invocations for %s: %v", functionName2, invocationsFunc2)
 
-	if err := invocationsFunc2.Validate(concurrency, expectedNumInvocations); err != nil {
-		t.Fatal(err)
-	}
+		if err := invocationsFunc1.Validate(concurrency, expectedNumInvocations); err != nil {
+			return "", err
+		}
+
+		if err := invocationsFunc2.Validate(concurrency, expectedNumInvocations); err != nil {
+			return "", err
+		}
+
+		return fmt.Sprintf("Lambda functions %s and %s have been invoked %d times each", functionName1, functionName2, expectedNumInvocations), nil
+	})
+
+	timeElapsed := time.Since(start)
+	assert.True(t, timeElapsed < maxTimeElapsed, "Expected that less than %s time has passed since starting these checks, but it actually took %s", maxTimeElapsed, timeElapsed)
 }
 
 func getDataFromDynamoDb(t *testing.T, dynamoDbTableName string, awsRegion string) (*dynamodb.ScanOutput, error) {
@@ -202,7 +207,7 @@ func NewInvocations() *Invocations {
 func (invocations *Invocations) Validate(concurrency int, expectedNumInvocations int) error {
 	expectedTotalInvocations := expectedNumInvocations * concurrency
 	if expectedTotalInvocations != invocations.Count {
-		return fmt.Errorf("Expected %d invocations but got %d", expectedNumInvocations, invocations.Count)
+		return fmt.Errorf("Expected %d invocations but got %d", expectedTotalInvocations, invocations.Count)
 	}
 
 	if concurrency != len(invocations.FunctionIds) {
