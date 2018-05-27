@@ -38,7 +38,7 @@ module "scheduled" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "allow_invoking_other_functions" {
-  name   = "allow-invoking-other-functions-"
+  name   = "allow-invoking-other-functions"
   role   = "${module.keep_warm.iam_role_id}"
   policy = "${data.aws_iam_policy_document.allow_invoking_other_functions.json}"
 }

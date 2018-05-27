@@ -19,7 +19,7 @@ exports.handler = (event, context, callback) => {
   Promise
       .all(promises)
       .then(_ => callback(null, "Success"))
-      .catch(err => callback(err));
+      .catch(callback);
 };
 
 // Asynchronously invoke the given Lambda function concurrency times, passing it the given event each time. Returns

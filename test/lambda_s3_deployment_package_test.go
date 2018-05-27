@@ -7,8 +7,6 @@ import (
 	"reflect"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/logger"
-	"github.com/gruntwork-io/terratest/modules/retry"
-	"time"
 )
 
 func TestLambdaS3DeploymentPackage(t *testing.T) {
@@ -23,19 +21,8 @@ func TestLambdaS3DeploymentPackage(t *testing.T) {
 
 	event, requestPayload := createEventForEchoLambdaFunction(t, uniqueId)
 
-	description := fmt.Sprintf("Invoke function %s", functionName)
-	maxRetries := 5
-	timeBetweenRetries := 5 * time.Second
-
-	responsePayload := retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		responsePayload, err := triggerLambdaFunctionE(t, functionName, requestPayload, awsRegion)
-		if err != nil {
-			return "", err
-		}
-		return string(responsePayload), nil
-	})
-
-	assertResponsePayloadUnchanged(t, event, []byte(responsePayload))
+	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
+	assertResponsePayloadUnchanged(t, event, responsePayload)
 }
 
 func createEventForEchoLambdaFunction(t *testing.T, uniqueId string) (map[string]string, []byte) {
