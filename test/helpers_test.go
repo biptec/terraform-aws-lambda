@@ -10,6 +10,8 @@ import (
 	terraws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"time"
+	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
 var regionsWithoutLambda = []string{
@@ -48,11 +50,21 @@ func readFileAsString(t *testing.T, filePath string) string {
 }
 
 func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, awsRegion string) []byte {
-	out, err := triggerLambdaFunctionE(t, functionName, payload, awsRegion)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return out
+	description := fmt.Sprintf("Trigger lambda function %s", functionName)
+	maxRetries := 5
+	timeBetweenRetries := 5 * time.Second
+
+	// We have to retry Lambda invocations due to some strange, intermittent error that has appeared recently:
+	// "AccessDeniedException: The role defined for the function cannot be assumed by Lambda."
+	out := retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		out, err := triggerLambdaFunctionE(t, functionName, payload, awsRegion)
+		if err != nil {
+			return "", err
+		}
+		return string(out), nil
+	})
+
+	return []byte(out)
 }
 
 func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, awsRegion string) ([]byte, error) {
