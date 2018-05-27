@@ -21,3 +21,7 @@ output "keep_warm_function_name" {
 output "keep_warm_function_arn" {
   value = "${module.keep_warm.function_arn}"
 }
+
+output "dynamodb_table_name" {
+  value = "${aws_dynamodb_table.example.name}"
+}

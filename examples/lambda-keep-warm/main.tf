@@ -22,6 +22,10 @@ module "lambda_example_1" {
 
   timeout     = 30
   memory_size = 128
+
+  environment_variables = {
+    DYNAMODB_TABLE_NAME = "${aws_dynamodb_table.example.name}"
+  }
 }
 
 module "lambda_example_2" {
@@ -35,6 +39,10 @@ module "lambda_example_2" {
 
   timeout     = 30
   memory_size = 128
+
+  environment_variables = {
+    DYNAMODB_TABLE_NAME = "${aws_dynamodb_table.example.name}"
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -64,4 +72,49 @@ module "keep_warm" {
 
   schedule_expression = "${var.schedule_expression}"
   concurrency         = "${var.concurrency}"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE A DYNAMODB TABLE FOR THE EXAMPLE FUNCTIONS
+# Purely for testing purposes, the example Lambda functions write to DynamoDB
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_dynamodb_table" "example" {
+  name           = "${var.name}"
+  read_capacity  = 1
+  write_capacity = "${var.concurrency}"
+  hash_key       = "RequestId"
+  range_key      = "FunctionId"
+
+  attribute {
+    name = "RequestId"
+    type = "S"
+  }
+
+  attribute {
+    name = "FunctionId"
+    type = "S"
+  }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# GIVE THE LAMBDA FUNCTIONS ACCESS TO THE DYNAMODB TABLE
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_iam_role_policy" "access_dynamodb_1" {
+  role   = "${module.lambda_example_1.iam_role_id}"
+  policy = "${data.aws_iam_policy_document.access_dynamodb.json}"
+}
+
+resource "aws_iam_role_policy" "access_dynamodb_2" {
+  role   = "${module.lambda_example_2.iam_role_id}"
+  policy = "${data.aws_iam_policy_document.access_dynamodb.json}"
+}
+
+data "aws_iam_policy_document" "access_dynamodb" {
+  statement {
+    effect    = "Allow"
+    actions   = ["dynamodb:*"]
+    resources = ["${aws_dynamodb_table.example.arn}"]
+  }
 }
