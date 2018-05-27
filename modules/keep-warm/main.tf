@@ -49,6 +49,6 @@ data "aws_iam_policy_document" "allow_invoking_other_functions" {
     actions = [
       "lambda:InvokeFunction"
     ]
-    resources = ["*"]
+    resources = ["${keys(var.function_to_event_map)}"]
   }
 }
