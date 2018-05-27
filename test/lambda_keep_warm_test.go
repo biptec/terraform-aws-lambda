@@ -117,31 +117,23 @@ func assertFunctionsHaveBeenInvoked(t *testing.T, awsRegion string, terraformOpt
 	functionName1 := terraform.OutputRequired(t, terraformOptions, "lambda_example_1_function_name")
 	functionName2 := terraform.OutputRequired(t, terraformOptions, "lambda_example_2_function_name")
 
-	description := "Count invocations based on DynamoDB data"
-	maxRetries := 3
-	timeBetweenRetries := 5 * time.Second
+	dynamoDbData, err := getDataFromDynamoDb(t, dynamoDBTableName, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		dynamoDbData, err := getDataFromDynamoDb(t, dynamoDBTableName, awsRegion)
-		if err != nil {
-			return "", err
-		}
+	invocationsFunc1, invocationsFunc2 := countInvocations(t, dynamoDbData, functionName1, functionName2)
 
-		invocationsFunc1, invocationsFunc2 := countInvocations(t, dynamoDbData, functionName1, functionName2)
+	logger.Logf(t, "Invocations for %s: %v", functionName1, invocationsFunc1)
+	logger.Logf(t, "Invocations for %s: %v", functionName2, invocationsFunc2)
 
-		logger.Logf(t, "Invocations for %s: %v", functionName1, invocationsFunc1)
-		logger.Logf(t, "Invocations for %s: %v", functionName2, invocationsFunc2)
+	if err := invocationsFunc1.Validate(concurrency, expectedNumInvocations); err != nil {
+		t.Fatal(err)
+	}
 
-		if err := invocationsFunc1.Validate(concurrency, expectedNumInvocations); err != nil {
-			return "", err
-		}
-
-		if err := invocationsFunc2.Validate(concurrency, expectedNumInvocations); err != nil {
-			return "", err
-		}
-
-		return "", nil
-	})
+	if err := invocationsFunc2.Validate(concurrency, expectedNumInvocations); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func getDataFromDynamoDb(t *testing.T, dynamoDbTableName string, awsRegion string) (*dynamodb.ScanOutput, error) {
