@@ -7,9 +7,10 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/aws"
-	"gopkg.in/go-playground/assert.v1"
 	"github.com/gruntwork-io/terratest/modules/test-structure"
 	"time"
+	"fmt"
+	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
 const savedAwsRegion = "AwsRegion"
@@ -72,30 +73,56 @@ func testLambdaKeepWarm(t *testing.T, concurrency int) {
 }
 
 func assertFunctionsHaveBeenInvoked(t *testing.T, awsRegion string, terraformOptions *terraform.Options, concurrency int, expectedNumInvocations int) {
-	sess, err := terraws.NewAuthenticatedSession(awsRegion)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dynamodbClient := dynamodb.New(sess)
-
 	dynamoDBTableName := terraform.OutputRequired(t, terraformOptions, "dynamodb_table_name")
 	functionName1 := terraform.OutputRequired(t, terraformOptions, "lambda_example_1_function_name")
 	functionName2 := terraform.OutputRequired(t, terraformOptions, "lambda_example_2_function_name")
 
+	description := "Count invocations based on DynamoDB data"
+	maxRetries := 3
+	timeBetweenRetries := 2 * time.Second
+
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		dynamoDbData, err := getDataFromDynamoDb(t, dynamoDBTableName, awsRegion)
+		if err != nil {
+			return "", err
+		}
+
+		invocationsFunc1, invocationsFunc2 := countInvocations(t, dynamoDbData, functionName1, functionName2)
+
+		logger.Logf(t, "Invocations for %s: %v", functionName1, invocationsFunc1)
+		logger.Logf(t, "Invocations for %s: %v", functionName2, invocationsFunc2)
+
+		if err := invocationsFunc1.Validate(concurrency, expectedNumInvocations); err != nil {
+			return "", err
+		}
+
+		if err := invocationsFunc2.Validate(concurrency, expectedNumInvocations); err != nil {
+			return "", err
+		}
+
+		return "", nil
+	})
+}
+
+func getDataFromDynamoDb(t *testing.T, dynamoDbTableName string, awsRegion string) (*dynamodb.ScanOutput, error) {
+	sess, err := terraws.NewAuthenticatedSession(awsRegion)
+	if err != nil {
+		return nil, err
+	}
+
+	dynamodbClient := dynamodb.New(sess)
+
 	input := dynamodb.ScanInput{
 		ConsistentRead: aws.Bool(true),
-		TableName:      aws.String(dynamoDBTableName),
+		TableName:      aws.String(dynamoDbTableName),
 	}
 
-	out, err := dynamodbClient.Scan(&input)
+	return dynamodbClient.Scan(&input)
+}
 
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Count how many times each function was invoked and how many unique function IDs were found. Each function ID
-	// represents a new Docker container concurrently running and being kept "warm."
+// Count how many times each function was invoked and how many unique function IDs were found. Each function ID
+// represents a new Docker container concurrently running and being kept "warm."
+func countInvocations(t *testing.T, out *dynamodb.ScanOutput, functionName1 string, functionName2 string) (*Invocations, *Invocations) {
 	invocations := map[string]*Invocations{
 		functionName1: NewInvocations(),
 		functionName2: NewInvocations(),
@@ -114,16 +141,7 @@ func assertFunctionsHaveBeenInvoked(t *testing.T, awsRegion string, terraformOpt
 		invocation.FunctionIds[functionId] = true
 	}
 
-	invocationsFunc1 := invocations[functionName1]
-	invocationsFunc2 := invocations[functionName2]
-
-	logger.Logf(t, "Invocations for %s: %v", functionName1, invocationsFunc1)
-	logger.Logf(t, "Invocations for %s: %v", functionName2, invocationsFunc2)
-
-	assert.Equal(t, expectedNumInvocations * concurrency, invocationsFunc1.Count)
-	assert.Equal(t, expectedNumInvocations * concurrency, invocationsFunc2.Count)
-	assert.Equal(t, concurrency, len(invocationsFunc1.FunctionIds))
-	assert.Equal(t, concurrency, len(invocationsFunc2.FunctionIds))
+	return invocations[functionName1], invocations[functionName2]
 }
 
 func getRequiredDynamoDbValue(t *testing.T, item map[string]*dynamodb.AttributeValue, key string) string {
@@ -149,3 +167,15 @@ func NewInvocations() *Invocations {
 	}
 }
 
+func (invocations *Invocations) Validate(concurrency int, expectedNumInvocations int) error {
+	expectedTotalInvocations := expectedNumInvocations * concurrency
+	if expectedTotalInvocations != invocations.Count {
+		return fmt.Errorf("Expected %d invocations but got %d", expectedNumInvocations, invocations.Count)
+	}
+
+	if concurrency != len(invocations.FunctionIds) {
+		return fmt.Errorf("Expected a concurrency of %d, but found %d unique function IDs", concurrency, len(invocations.FunctionIds))
+	}
+
+	return nil
+}
