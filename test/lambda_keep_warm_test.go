@@ -63,7 +63,7 @@ func testLambdaKeepWarm(t *testing.T, concurrency int) {
 
 		// The warm-up function runs once per minute and the lambda functions it invokes take ~5 seconds to run, so
 		// sleep a little over a minute to make sure everything is completed by the time we run our checks
-		sleepTime := 70 * time.Second
+		sleepTime := 65 * time.Second
 
 		logger.Logf(t, "Sleeping for %s to give the warm-up function time to run the first time", sleepTime)
 		time.Sleep(sleepTime)
