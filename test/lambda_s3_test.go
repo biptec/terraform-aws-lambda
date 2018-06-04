@@ -35,7 +35,7 @@ func getBase64ImageDataFromResponsePayload(t *testing.T, payload []byte) string 
 
 	response := map[string]string{}
 	if err := json.Unmarshal(payload, &response); err != nil {
-		t.Fatal(err)
+		t.Fatalf("Failed to parse response payload from Lambda function. Error: %v. Payload: %s.", err, string(payload))
 	}
 
 	base64Data, hasBase64Data := response["image_base64"]
