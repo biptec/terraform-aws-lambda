@@ -16,14 +16,14 @@ jobs:
         at: *workspace_root
     - restore_cache:
         keys:
-        - dep-{{ checksum "Gopkg.lock" }}
-    - run: dep ensure
+        - dep-{{ checksum "test/Gopkg.lock" }}
+    - run: cd test && dep ensure
     - save_cache:
-        key: dep-{{ checksum "Gopkg.lock" }}
-        paths: /go/src/github.com/gruntwork-io/package-lambda/vendor
+        key: dep-{{ checksum "test/Gopkg.lock" }}
+        paths: /go/src/github.com/gruntwork-io/package-lambda/test/vendor
     - persist_to_workspace:
         root: *workspace_root
-        paths: vendor
+        paths: test/vendor
 
   test:
     <<: *defaults
