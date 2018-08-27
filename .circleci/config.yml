@@ -1,62 +1,31 @@
-workspace_root: &workspace_root
-  /go/src/github.com/gruntwork-io/package-lambda
-
 defaults: &defaults
-  working_directory: *workspace_root
+  working_directory: /home/circleci/.go_workspace/src/github.com/gruntwork-io/module-load-balancer
   machine:
-    image: 087285199408.dkr.ecr.us-east-1.amazonaws.com/circle-ci-test-image-base:latest
+    image: circleci/classic:201808-01
 
-version: 2
+version: 2.0
 jobs:
-  install_dependencies:
+  test aws:
     <<: *defaults
     steps:
     - checkout
-    - attach_workspace:
-        at: *workspace_root
-    - restore_cache:
-        keys:
-        - dep-{{ checksum "test/Gopkg.lock" }}
-    - run: cd test && dep ensure
-    - save_cache:
-        key: dep-{{ checksum "test/Gopkg.lock" }}
-        paths: /go/src/github.com/gruntwork-io/package-lambda/test/vendor
-    - persist_to_workspace:
-        root: *workspace_root
-        paths: test/vendor
-
-  test:
-    <<: *defaults
-    steps:
-    - checkout
-    - attach_workspace:
-        at: *workspace_root
-    - run:  run-go-tests --circle-ci-2 --path test
+    - run: &install_gruntwork_tooling
+        name: install gruntwork tooling
+        command: |
+          sudo apt-get -y update
+          curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
+          gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.0"
+          configure-environment-for-gruntwork-module --circle-ci-2 --use-go-dep --go-src-path test
+    - run:
+        name: run tests
+        command: run-go-tests --path test --timeout 1h --circle-ci-2
+        no_output_timeout: 3600s
 
 workflows:
   version: 2
-  run-tests:
+  build-and-test:
     jobs:
-    - install_dependencies:
+    - test aws:
         filters:
           tags:
             only: /^v.*/
-    - test:
-        requires:
-        - install_dependencies
-        filters:
-          tags:
-            only: /^v.*/
-  nightly:
-    triggers:
-    - schedule:
-        cron: "0 6 * * *"
-        filters:
-          branches:
-            only: master
-    jobs:
-    - install_dependencies
-    - test:
-        requires:
-        - install_dependencies
-        
