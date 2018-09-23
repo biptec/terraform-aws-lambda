@@ -13,7 +13,7 @@ ENV DEPS_DIR ${BASE_DIR}/dependencies
 # look for the dependencies there.
 RUN mkdir -p ${DEPS_DIR}
 COPY requirements.txt ${DEPS_DIR}/requirements.txt
-RUN pip-python install -r ${DEPS_DIR}/requirements.txt --target ${DEPS_DIR}
+RUN pip install -r ${DEPS_DIR}/requirements.txt --target ${DEPS_DIR}
 ENV PYTHONPATH ${DEPS_DIR}:${PYTHONPATH}
 
 # Copy in our source code. Note that we intentionally put the source code in a separate folder from the dependencies so
