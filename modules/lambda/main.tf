@@ -33,7 +33,7 @@ resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
 
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
   # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
-  depends_on = ["aws_iam_role_policy.network_interfaces_for_lamda"]
+  depends_on = ["aws_iam_role_policy.network_interfaces_for_lamda", "null_resource.wait_for"]
 
   vpc_config {
     subnet_ids         = ["${var.subnet_ids}"]
@@ -71,7 +71,7 @@ resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
 
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
   # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
-  depends_on = ["aws_iam_role_policy.network_interfaces_for_lamda"]
+  depends_on = ["aws_iam_role_policy.network_interfaces_for_lamda", "null_resource.wait_for"]
 
   vpc_config {
     subnet_ids         = ["${var.subnet_ids}"]
@@ -112,6 +112,8 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
     variables = "${var.environment_variables}"
   }
 
+  depends_on = ["null_resource.wait_for"]
+
   # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
   #
   # dead_letter_config {
@@ -141,6 +143,8 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
     variables = "${var.environment_variables}"
   }
 
+  depends_on = ["null_resource.wait_for"]
+
   # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
   #
   # dead_letter_config {
@@ -158,19 +162,27 @@ data "archive_file" "source_code" {
   type        = "zip"
   source_dir  = "${var.source_path}"
   output_path = "${var.source_path}/lambda.zip"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 data "template_file" "hash_from_source_code_zip" {
   count = "${var.skip_zip}"
   template = "${base64sha256(file(var.source_path))}"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 data "template_file" "source_code_hash" {
   template = "${var.skip_zip ? join(",", data.template_file.hash_from_source_code_zip.*.rendered) : join(",", data.archive_file.source_code.*.output_base64sha256)}"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 data "template_file" "zip_file_path" {
   template = "${var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)}"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -186,6 +198,8 @@ resource "aws_security_group" "lambda" {
   name        = "${var.name}-lambda"
   description = "Security group for the lambda function ${var.name}"
   vpc_id      = "${var.vpc_id}"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -197,6 +211,8 @@ resource "aws_security_group" "lambda" {
 resource "aws_iam_role" "lambda" {
   name               = "${var.name}"
   assume_role_policy = "${data.aws_iam_policy_document.lambda_role.json}"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 data "aws_iam_policy_document" "lambda_role" {
@@ -209,6 +225,8 @@ data "aws_iam_policy_document" "lambda_role" {
       identifiers = ["lambda.amazonaws.com"]
     }
   }
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -219,6 +237,8 @@ resource "aws_iam_role_policy" "logging_for_lambda" {
   name   = "${var.name}-logging"
   role   = "${aws_iam_role.lambda.id}"
   policy = "${data.aws_iam_policy_document.logging_for_lambda.json}"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 data "aws_iam_policy_document" "logging_for_lambda" {
@@ -233,6 +253,8 @@ data "aws_iam_policy_document" "logging_for_lambda" {
 
     resources = ["arn:aws:logs:*:*:*"]
   }
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -246,6 +268,8 @@ resource "aws_iam_role_policy" "network_interfaces_for_lamda" {
   name   = "${var.name}-network-interfaces"
   role   = "${aws_iam_role.lambda.id}"
   policy = "${element(data.aws_iam_policy_document.network_interfaces_for_lamda.*.json, count.index)}"
+
+  depends_on = ["null_resource.wait_for"]
 }
 
 data "aws_iam_policy_document" "network_interfaces_for_lamda" {
@@ -264,5 +288,20 @@ data "aws_iam_policy_document" "network_interfaces_for_lamda" {
     ]
 
     resources = ["*"]
+  }
+
+  depends_on = ["null_resource.wait_for"]
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE WAIT_FOR NULL_RESOURCE
+# This is a workaround for the fact that Terraform does not support depends_on for modules. We make this null_resource
+# depend on a variable passed in by the user, and then, in turn, we make every resource in this module depend on this
+# null_resource.
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "null_resource" "wait_for" {
+  triggers {
+    wait_for = "${var.wait_for}"
   }
 }
