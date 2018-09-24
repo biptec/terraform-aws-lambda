@@ -304,4 +304,8 @@ resource "null_resource" "wait_for" {
   triggers {
     wait_for = "${var.wait_for}"
   }
+
+  provisioner "local-exec" {
+    command = "sleep 1"
+  }
 }
