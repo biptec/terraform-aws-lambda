@@ -5,19 +5,19 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 resource "aws_cloudwatch_event_rule" "scheduled_lambda_job" {
-  name = "${var.lambda_function_name}-scheduled"
+  name = "${var.namespace == "" ? "${var.lambda_function_name}-scheduled" : var.namespace}"
   description = "Event that runs the lambda function ${var.lambda_function_name} on a periodic schedule"
   schedule_expression = "${var.schedule_expression}"
 }
 
 resource "aws_cloudwatch_event_target" "scheduled_lambda_job" {
   rule = "${aws_cloudwatch_event_rule.scheduled_lambda_job.name}"
-  target_id = "${var.lambda_function_name}-scheduled"
+  target_id = "${var.namespace == "" ? "${var.lambda_function_name}-scheduled" : var.namespace}"
   arn = "${var.lambda_function_arn}"
 }
 
 resource "aws_lambda_permission" "allow_execution_from_cloudwatch" {
-  statement_id = "${var.lambda_function_name}-allow-from-cloudwatch"
+  statement_id = "${var.namespace == "" ? "${var.lambda_function_name}-scheduled" : var.namespace}"
   action = "lambda:InvokeFunction"
   function_name = "${var.lambda_function_arn}"
   principal = "events.amazonaws.com"
