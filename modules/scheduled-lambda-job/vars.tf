@@ -14,3 +14,13 @@ variable "lambda_function_arn" {
 variable "schedule_expression" {
   description = "An expression that defines the schedule for this lambda job. For example, cron(0 20 * * ? *) or rate(5 minutes)."
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL MODULE PARAMETERS
+# These variables have defaults, but may be overridden by the operator.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "namespace" {
+  description = "The namespace to use for all resources created by this module. If not set, var.lambda-function_name, with '-scheduled' as a suffix, is used."
+  default     = ""
+}
