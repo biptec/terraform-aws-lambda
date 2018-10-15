@@ -23,7 +23,7 @@ func TestLambdaBuild(t *testing.T) {
 	requestPayload := createPayloadFormLambdaBuildFunction(t)
 
 	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
-	assertValidResponsePayload(t, responsePayload)
+	assertValidResponsePayload(t, []byte(responsePayload))
 }
 
 func buildDeploymentPackage(t *testing.T) {

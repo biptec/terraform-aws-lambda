@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"fmt"
 )
 
 func TestLambdaS3(t *testing.T) {
@@ -18,8 +19,9 @@ func TestLambdaS3(t *testing.T) {
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 	requestPayload := createEventObjectPayloadForLambdaFunction(t, terraformOptions, awsRegion)
 
-	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
-	actualBase64Data := getBase64ImageDataFromResponsePayload(t, responsePayload)
+	actualBase64Data := triggerLambdaFunctionWithCustomAction(t, functionName, requestPayload, awsRegion, func(responsePayload string) (string, error) {
+		return getBase64ImageDataFromResponsePayloadE(t, []byte(responsePayload))
+	})
 
 	expectedBase64Data := readFileAsString(t, "gruntwork-logo.base64.txt")
 
@@ -30,20 +32,20 @@ func TestLambdaS3(t *testing.T) {
 	}
 }
 
-func getBase64ImageDataFromResponsePayload(t *testing.T, payload []byte) string {
+func getBase64ImageDataFromResponsePayloadE(t *testing.T, payload []byte) (string, error) {
 	logger.Logf(t, "Parsing response payload from Lambda function to extract base64-encoded image data.")
 
 	response := map[string]string{}
 	if err := json.Unmarshal(payload, &response); err != nil {
-		t.Fatalf("Failed to parse response payload from Lambda function. Error: %v. Payload: %s.", err, string(payload))
+		return "", fmt.Errorf("Failed to parse response payload from Lambda function. Error: %v. Payload: %s.", err, string(payload))
 	}
 
 	base64Data, hasBase64Data := response["image_base64"]
 	if !hasBase64Data {
-		t.Fatalf("Response payload did not contain base 64 image data! %v", response)
+		return "", fmt.Errorf("Response payload did not contain base 64 image data! %v", response)
 	}
 
-	return base64Data
+	return base64Data, nil
 }
 
 func createEventObjectPayloadForLambdaFunction(t *testing.T, terraformOptions *terraform.Options, awsRegion string) []byte {

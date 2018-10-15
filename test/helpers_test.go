@@ -49,22 +49,25 @@ func readFileAsString(t *testing.T, filePath string) string {
 	return string(out)
 }
 
-func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, awsRegion string) []byte {
+func triggerLambdaFunctionWithCustomAction(t *testing.T, functionName string, payload []byte, awsRegion string, action func(string) (string, error)) string {
 	description := fmt.Sprintf("Trigger lambda function %s", functionName)
-	maxRetries := 5
+	maxRetries := 10
 	timeBetweenRetries := 5 * time.Second
 
 	// We have to retry Lambda invocations due to some strange, intermittent error that has appeared recently:
 	// "AccessDeniedException: The role defined for the function cannot be assumed by Lambda."
-	out := retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+	return retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
 		out, err := triggerLambdaFunctionE(t, functionName, payload, awsRegion)
 		if err != nil {
 			return "", err
 		}
-		return string(out), nil
+		return action(string(out))
 	})
+}
 
-	return []byte(out)
+func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, awsRegion string) string {
+	identity := func(str string) (string, error) { return str, nil }
+	return triggerLambdaFunctionWithCustomAction(t, functionName, payload, awsRegion, identity)
 }
 
 func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, awsRegion string) ([]byte, error) {

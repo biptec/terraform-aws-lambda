@@ -20,7 +20,7 @@ func TestLambdaEdge(t *testing.T) {
 	requestPayload := []byte(mockCloudfrontTriggerEvent)
 
 	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
-	assertValidLambdaEdgeResponsePayload(t, responsePayload)
+	assertValidLambdaEdgeResponsePayload(t, []byte(responsePayload))
 }
 
 func assertValidLambdaEdgeResponsePayload(t *testing.T, payload []byte) {

@@ -22,7 +22,7 @@ func TestLambdaS3DeploymentPackage(t *testing.T) {
 	event, requestPayload := createEventForEchoLambdaFunction(t, uniqueId)
 
 	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
-	assertResponsePayloadUnchanged(t, event, responsePayload)
+	assertResponsePayloadUnchanged(t, event, []byte(responsePayload))
 }
 
 func createEventForEchoLambdaFunction(t *testing.T, uniqueId string) (map[string]string, []byte) {
