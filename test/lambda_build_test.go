@@ -1,12 +1,13 @@
 package test
 
 import (
-	"testing"
 	"encoding/json"
-	"strings"
-	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
+	"strings"
+	"testing"
 )
 
 func TestLambdaBuild(t *testing.T) {
@@ -24,6 +25,10 @@ func TestLambdaBuild(t *testing.T) {
 
 	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
 	assertValidResponsePayload(t, []byte(responsePayload))
+
+	// Verify perpetual diff issue https://github.com/gruntwork-io/package-lambda/issues/26
+	exitCode := terraform.PlanExitCode(t, terraformOptions)
+	assert.Equal(t, exitCode, 0)
 }
 
 func buildDeploymentPackage(t *testing.T) {
