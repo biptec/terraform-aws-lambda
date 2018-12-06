@@ -95,11 +95,6 @@ variable "skip_zip" {
   default     = false
 }
 
-variable "wait_for" {
-  description = "This variable tells all resources in this module to wait for something before creating those resources. This is useful, for example, if you are creating the zip file in source_path dynamically and want to force this module to wait until the zip file is done before deploying. This is essentially a workaround for the fact that Terraform doesn't support depends_on for modules."
-  default     = ""
-}
-
 # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
 #
 # variable "dead_letter_target_arn" {

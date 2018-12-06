@@ -1,5 +1,5 @@
 defaults: &defaults
-  working_directory: /home/circleci/.go_workspace/src/github.com/gruntwork-io/module-load-balancer
+  working_directory: /home/circleci/.go_workspace/src/github.com/gruntwork-io/package-lambda
   machine:
     image: circleci/classic:201808-01
 
@@ -15,11 +15,22 @@ jobs:
           sudo apt-get -y update
           curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
           gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.0"
+          gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag v0.13.13
           configure-environment-for-gruntwork-module --circle-ci-2 --use-go-dep --go-src-path test
     - run:
         name: run tests
-        command: run-go-tests --path test --timeout 1h --circle-ci-2
+        command: |
+            mkdir -p /tmp/logs
+            run-go-tests --path test --timeout 1h --circle-ci-2 | tee /tmp/logs/all.log
         no_output_timeout: 3600s
+
+    - run:
+        command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
+        when: always
+    - store_artifacts:
+        path: /tmp/logs
+    - store_test_results:
+        path: /tmp/logs
 
 workflows:
   version: 2

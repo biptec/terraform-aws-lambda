@@ -1,11 +1,11 @@
 package test
 
 import (
-	"testing"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestLambdaEdge(t *testing.T) {
@@ -21,6 +21,10 @@ func TestLambdaEdge(t *testing.T) {
 
 	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
 	assertValidLambdaEdgeResponsePayload(t, []byte(responsePayload))
+
+	// Verify perpetual diff issue https://github.com/gruntwork-io/package-lambda/issues/26
+	exitCode := terraform.PlanExitCode(t, terraformOptions)
+	assert.Equal(t, exitCode, 0)
 }
 
 func assertValidLambdaEdgeResponsePayload(t *testing.T, payload []byte) {
@@ -37,8 +41,7 @@ func assertValidLambdaEdgeResponsePayload(t *testing.T, payload []byte) {
 	assert.Equal(t, expectedResponse, actualResponse)
 }
 
-const mockCloudfrontRequest =
-`{
+const mockCloudfrontRequest = `{
   "clientIp": "2001:0db8:85a3:0:0:8a2e:0370:7334",
   "querystring": "size=large",
   "uri": "/picture.jpg",
@@ -96,7 +99,7 @@ const mockCloudfrontRequest =
 }`
 
 var mockCloudfrontTriggerEvent = fmt.Sprintf(
-`{
+	`{
   "Records": [
     {
       "cf": {

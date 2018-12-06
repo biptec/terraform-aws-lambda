@@ -1,11 +1,13 @@
 package test
 
 import (
-	"testing"
+	"crypto/md5"
 	"encoding/json"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/gruntwork-io/terratest/modules/logger"
 	"fmt"
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestLambdaS3(t *testing.T) {
@@ -25,11 +27,22 @@ func TestLambdaS3(t *testing.T) {
 
 	expectedBase64Data := readFileAsString(t, "gruntwork-logo.base64.txt")
 
+	// We use a md5 checksum for printing purposes, as terratest_log_parser has a bug where it can't read in the entire
+	// base64 string
+	// https://github.com/gruntwork-io/terratest/issues/203
+
 	if expectedBase64Data == actualBase64Data {
-		logger.Logf(t, "Got back expected base 64 data from the lambda function!\n%s", actualBase64Data)
+		expectedHashedData := md5.Sum([]byte(expectedBase64Data))
+		logger.Logf(t, "Got back expected base 64 data from the lambda function! MD5 hash of data:\n%x", expectedHashedData)
 	} else {
-		t.Fatalf("Did not get back expected base64 data. Expected:\n%s\nActual:\n%s", expectedBase64Data, actualBase64Data)
+		expectedHashedData := md5.Sum([]byte(expectedBase64Data))
+		actualHashedData := md5.Sum([]byte(actualBase64Data))
+		t.Fatalf("Did not get back expected base64 data. MD5 hash of data - Expected:\n%x\nActual:\n%x", expectedHashedData, actualHashedData)
 	}
+
+	// Verify perpetual diff issue https://github.com/gruntwork-io/package-lambda/issues/26
+	exitCode := terraform.PlanExitCode(t, terraformOptions)
+	assert.Equal(t, exitCode, 0)
 }
 
 func getBase64ImageDataFromResponsePayloadE(t *testing.T, payload []byte) (string, error) {
@@ -53,8 +66,8 @@ func createEventObjectPayloadForLambdaFunction(t *testing.T, terraformOptions *t
 	imageFileName := terraform.OutputRequired(t, terraformOptions, "image_filename")
 
 	event := map[string]string{
-		"aws_region": awsRegion,
-		"s3_bucket": s3BucketName,
+		"aws_region":     awsRegion,
+		"s3_bucket":      s3BucketName,
 		"image_filename": imageFileName,
 	}
 

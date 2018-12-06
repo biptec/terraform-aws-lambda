@@ -2,85 +2,208 @@
 
 
 [[projects]]
+  digest = "1:06aa4862c602ffcff3363ef07cd8f3fa610953d3510829499e808a59381c9cf2"
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","private/protocol","private/protocol/ec2query","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","private/waiter","service/acm","service/cloudwatchlogs","service/ec2","service/iam","service/kms","service/lambda","service/s3","service/sns","service/sqs","service/sts"]
-  revision = "82eadef012f77590875babb177c60878727821c0"
-  version = "v1.12.74"
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/processcreds",
+    "aws/credentials/stscreds",
+    "aws/crr",
+    "aws/csm",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/ini",
+    "internal/s3err",
+    "internal/sdkio",
+    "internal/sdkrand",
+    "internal/sdkuri",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/ec2query",
+    "private/protocol/eventstream",
+    "private/protocol/eventstream/eventstreamapi",
+    "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/restjson",
+    "private/protocol/restxml",
+    "private/protocol/xml/xmlutil",
+    "service/acm",
+    "service/autoscaling",
+    "service/cloudwatchlogs",
+    "service/dynamodb",
+    "service/ec2",
+    "service/iam",
+    "service/kms",
+    "service/lambda",
+    "service/rds",
+    "service/s3",
+    "service/s3/s3iface",
+    "service/s3/s3manager",
+    "service/sns",
+    "service/sqs",
+    "service/sts",
+  ]
+  pruneopts = ""
+  revision = "8e2c30c1f0ce88ba42eff973f07ee5ebe521f1ee"
+  version = "v1.16.0"
 
 [[projects]]
+  digest = "1:b529f4bf748979caa18b599d40d13e8b6e591a74b340f315ce4f95e119c288c2"
   name = "github.com/boombuler/barcode"
-  packages = [".","qr","utils"]
+  packages = [
+    ".",
+    "qr",
+    "utils",
+  ]
+  pruneopts = ""
   revision = "3cfea5ab600ae37946be2b763b8ec2c1cf2d272d"
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/go-errors/errors"
-  packages = ["."]
-  revision = "3afebba5a48dbc89b574d890b6b34d9ee10b4785"
-  version = "v1.0.0"
+  digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = ""
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
-  name = "github.com/go-ini/ini"
+  digest = "1:e692d16fdfbddb94e9e4886aaf6c08bdbae5cb4ac80651445de9181b371c6e46"
+  name = "github.com/go-sql-driver/mysql"
   packages = ["."]
-  revision = "e7fea39b01aea8d5671f6858f0532f56e8bff3a5"
-  version = "v1.27.0"
+  pruneopts = ""
+  revision = "72cd26f257d44c1114970e19afddcd812016007e"
+  version = "v1.4.1"
 
 [[projects]]
+  digest = "1:c1d7e883c50a26ea34019320d8ae40fad86c9e5d56e63a1ba2cb618cef43e986"
   name = "github.com/google/uuid"
   packages = ["."]
+  pruneopts = ""
   revision = "064e2069ce9c359c118179501254f67d7d37ba24"
   version = "0.2"
 
 [[projects]]
-  name = "github.com/gruntwork-io/gruntwork-cli"
-  packages = ["errors","logging"]
-  revision = "94044eeeb0a48b5e8dd52190fa0d0daba53e157f"
-  version = "v0.1.2"
-
-[[projects]]
+  digest = "1:fcb47c317033938068ed8612c9dde3bb9252a9ad0ad898b0ab16e4f087573c8b"
   name = "github.com/gruntwork-io/terratest"
-  packages = ["modules/aws","modules/logger","modules/random","modules/retry","modules/shell","modules/terraform"]
-  revision = "9ca40d792450cbd93f1c62901b685378ed701564"
+  packages = [
+    "modules/aws",
+    "modules/collections",
+    "modules/customerrors",
+    "modules/files",
+    "modules/logger",
+    "modules/packer",
+    "modules/random",
+    "modules/retry",
+    "modules/shell",
+    "modules/ssh",
+    "modules/terraform",
+    "modules/test-structure",
+  ]
+  pruneopts = ""
+  revision = "98d88f765d58ca34fbb8ac24cf20ff31a42d9667"
   source = "git@github.com:gruntwork-io/terratest"
-  version = "v0.9.4"
+  version = "v0.13.14"
 
 [[projects]]
+  digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
-  revision = "bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d"
+  pruneopts = ""
+  revision = "0b12d6b5"
 
 [[projects]]
+  digest = "1:256484dbbcd271f9ecebc6795b2df8cad4c458dd0f5fd82a8c2fa0c29f233411"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = ""
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:4aea8409c0c3472587636033ab1fa10a2cec1d716449c55d06de4ad96dec0ec1"
   name = "github.com/pquerna/otp"
-  packages = [".","hotp","totp"]
+  packages = [
+    ".",
+    "hotp",
+    "totp",
+  ]
+  pruneopts = ""
   revision = "b7b89250c468c06871d3837bee02e2d5c155ae19"
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
-
-[[projects]]
-  name = "github.com/urfave/cli"
-  packages = ["."]
-  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
-  version = "v1.20.0"
-
-[[projects]]
-  name = "golang.org/x/crypto"
-  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","ssh","ssh/terminal"]
-  revision = "cbc3d0884eac986df6e78a039b8792e869bff863"
+  digest = "1:c587772fb8ad29ad4db67575dad25ba17a51f072ff18a22b4f0257a4d9c24f75"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = ""
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   branch = "master"
-  name = "golang.org/x/sys"
-  packages = ["unix"]
-  revision = "810d7000345868fc619eb81f46307107118f4ae1"
+  digest = "1:887074c37fcefc2f49b5ae9c6f9f36107341aec23185613d0e9f1ee81db7f94a"
+  name = "golang.org/x/crypto"
+  packages = [
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "internal/chacha20",
+    "internal/subtle",
+    "poly1305",
+    "ssh",
+    "ssh/agent",
+  ]
+  pruneopts = ""
+  revision = "505ab145d0a99da450461ae2c1a9f6cd10d1f447"
+
+[[projects]]
+  branch = "master"
+  digest = "1:ea539c13b066dac72a940b62f37600a20ab8e88057397c78f3197c1a48475425"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  pruneopts = ""
+  revision = "351d144fa1fc0bd934e2408202be0c29f25e35a0"
+
+[[projects]]
+  digest = "1:77d3cff3a451d50be4b52db9c7766c0d8570ba47593f0c9dc72173adb208e788"
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  pruneopts = ""
+  revision = "4a4468ece617fc8205e99368fa2200e9d1fad421"
+  version = "v1.3.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7e8ecc8f537b80895263af06822dd8ef76274871f28a515c34e5d1ee5acb5a83"
+  input-imports = [
+    "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/service/cloudwatchlogs",
+    "github.com/aws/aws-sdk-go/service/dynamodb",
+    "github.com/aws/aws-sdk-go/service/lambda",
+    "github.com/gruntwork-io/terratest/modules/aws",
+    "github.com/gruntwork-io/terratest/modules/logger",
+    "github.com/gruntwork-io/terratest/modules/random",
+    "github.com/gruntwork-io/terratest/modules/retry",
+    "github.com/gruntwork-io/terratest/modules/shell",
+    "github.com/gruntwork-io/terratest/modules/terraform",
+    "github.com/gruntwork-io/terratest/modules/test-structure",
+    "github.com/stretchr/testify/assert",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
