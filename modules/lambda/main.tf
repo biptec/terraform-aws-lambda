@@ -154,12 +154,10 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "archive_file" "source_code" {
-  count      = "${var.skip_zip ? 0 : signum(length(var.source_path))}"
-  type       = "zip"
-  source_dir = "${var.source_path}"
-
-  // Store zipped lambda in the module path, to avoid packaging the lambda in the next run
-  output_path = "${path.module}/lambda.zip"
+  count       = "${var.skip_zip ? 0 : signum(length(var.source_path))}"
+  type        = "zip"
+  source_dir  = "${var.source_path}"
+  output_path = "${var.zip_output_dir == "" ? "${var.source_path}/lambda.zip" : "${var.zip_output_dir}/lambda.zip"}"
 }
 
 data "template_file" "hash_from_source_code_zip" {

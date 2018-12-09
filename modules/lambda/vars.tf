@@ -12,6 +12,11 @@ variable "source_path" {
   default     = ""
 }
 
+variable "zip_output_dir" {
+  description = "The path to the directory to store the output zip file of your source code. If empty, defaults to source_path."
+  default     = ""
+}
+
 variable "s3_bucket" {
   description = "An S3 bucket location containing the function's deployment package. Exactly one of var.source_path or the var.s3_xxx variables must be specified."
   default     = ""
