@@ -13,7 +13,7 @@ variable "source_path" {
 }
 
 variable "zip_output_path" {
-  description = "The path to store the output zip file of your source code. If empty, defaults to source_path. This should be the full path to the zip file, not a directory."
+  description = "The path to store the output zip file of your source code. If empty, defaults to module path. This should be the full path to the zip file, not a directory."
   default     = ""
 }
 
