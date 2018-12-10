@@ -72,7 +72,7 @@ data "archive_file" "source_code" {
   count       = "${var.skip_zip ? 0 : signum(length(var.source_path))}"
   type        = "zip"
   source_dir  = "${var.source_path}"
-  output_path = "${var.zip_output_path == "" ? "${path.module}/${var.name}_lambda.zip" : "${var.zip_output_path}"}"
+  output_path = "${var.zip_output_path == "" ? "${path.module}/${var.name}_lambda.zip" : var.zip_output_path}"
 }
 
 data "template_file" "hash_from_source_code_zip" {
