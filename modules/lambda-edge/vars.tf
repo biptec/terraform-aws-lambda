@@ -12,6 +12,11 @@ variable "source_path" {
   default     = ""
 }
 
+variable "zip_output_path" {
+  description = "The path to store the output zip file of your source code. If empty, defaults to module path. This should be the full path to the zip file, not a directory."
+  default     = ""
+}
+
 variable "s3_bucket" {
   description = "An S3 bucket location containing the function's deployment package. Exactly one of var.source_path or the var.s3_xxx variables must be specified."
   default     = ""
@@ -75,3 +80,4 @@ variable "skip_zip" {
 #  description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
 #  default = ""
 #}
+

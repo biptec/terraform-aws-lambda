@@ -45,7 +45,7 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
   description   = "${var.description}"
   publish       = "${var.enable_versioning}"
 
-  filename = "${data.template_file.zip_file_path.rendered}"
+  filename         = "${data.template_file.zip_file_path.rendered}"
   source_code_hash = "${data.template_file.source_code_hash.rendered}"
 
   runtime     = "${var.runtime}"
@@ -72,11 +72,11 @@ data "archive_file" "source_code" {
   count       = "${var.skip_zip ? 0 : signum(length(var.source_path))}"
   type        = "zip"
   source_dir  = "${var.source_path}"
-  output_path = "${var.source_path}/lambda.zip"
+  output_path = "${var.zip_output_path == "" ? "${path.module}/${var.name}_lambda.zip" : var.zip_output_path}"
 }
 
 data "template_file" "hash_from_source_code_zip" {
-  count = "${var.skip_zip}"
+  count    = "${var.skip_zip}"
   template = "${base64sha256(file(var.source_path))}"
 }
 
@@ -109,10 +109,11 @@ data "aws_iam_policy_document" "lambda_role" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type        = "Service"
+      type = "Service"
+
       identifiers = [
         "lambda.amazonaws.com",
-        "edgelambda.amazonaws.com"
+        "edgelambda.amazonaws.com",
       ]
     }
   }
