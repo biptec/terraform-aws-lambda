@@ -25,7 +25,7 @@ resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
-  layers      = "${var.layers}"
+  layers      = ["${var.layers}"]
   timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
@@ -64,7 +64,7 @@ resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
-  layers      = "${var.layers}"
+  layers      = ["${var.layers}"]
   timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
@@ -104,7 +104,7 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
-  layers      = "${var.layers}"
+  layers      = ["${var.layers}"]
   timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
@@ -134,7 +134,7 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
 
   runtime     = "${var.runtime}"
   handler     = "${var.handler}"
-  layers      = "${var.layers}"
+  layers      = ["${var.layers}"]
   timeout     = "${var.timeout}"
   memory_size = "${var.memory_size}"
   kms_key_arn = "${var.kms_key_arn}"
