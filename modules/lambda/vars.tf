@@ -40,6 +40,12 @@ variable "handler" {
   description = "The function entrypoint in your code. This is typically the name of a function or method in your code that AWS will execute when this Lambda function is triggered."
 }
 
+variable "layers" {
+  description = "The list of Lambda Layer Version ARNs to attach to your Lambda Function. You can have a maximum of 5 Layers attached to each function."
+  type        = "list"
+  default     = []
+}
+
 variable "timeout" {
   description = "The maximum amount of time, in seconds, your Lambda function will be allowed to run. Must be between 1 and 300 seconds."
 }
