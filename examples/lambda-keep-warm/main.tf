@@ -3,8 +3,21 @@
 # The keep-warm module will ensure the two Lambda functions do not have to go through a "cold start."
 # ---------------------------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------------------------
+# REQUIRE A SPECIFIC TERRAFORM VERSION OR HIGHER
+# This module has been updated with 0.12 syntax, which means it is no longer compatible with any versions below 0.12.
+# ----------------------------------------------------------------------------------------------------------------------
+
+terraform {
+  required_version = ">= 0.12"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CONFIGURE OUR AWS CONNECTION
+# ---------------------------------------------------------------------------------------------------------------------
+
 provider "aws" {
-  region = "${var.aws_region}"
+  region = var.aws_region
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -12,6 +25,9 @@ provider "aws" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "lambda_example_1" {
+  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
+  # to a specific version of the modules, such as the following example:
+  # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
   source = "../../modules/lambda"
 
   name = "${var.name}-example-1"
@@ -24,11 +40,14 @@ module "lambda_example_1" {
   memory_size = 128
 
   environment_variables = {
-    DYNAMODB_TABLE_NAME = "${aws_dynamodb_table.example.name}"
+    DYNAMODB_TABLE_NAME = aws_dynamodb_table.example.name
   }
 }
 
 module "lambda_example_2" {
+  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
+  # to a specific version of the modules, such as the following example:
+  # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
   source = "../../modules/lambda"
 
   name = "${var.name}-example-2"
@@ -41,7 +60,7 @@ module "lambda_example_2" {
   memory_size = 128
 
   environment_variables = {
-    DYNAMODB_TABLE_NAME = "${aws_dynamodb_table.example.name}"
+    DYNAMODB_TABLE_NAME = aws_dynamodb_table.example.name
   }
 }
 
@@ -50,9 +69,12 @@ module "lambda_example_2" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "keep_warm" {
+  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
+  # to a specific version of the modules, such as the following example:
+  # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/keep-warm?ref=v1.0.8"
   source = "../../modules/keep-warm"
 
-  name = "${var.name}"
+  name = var.name
 
   # This is a map where the keys are the ARNs of Lambda functions to invoke and the values are the event objects to
   # pass to those functions
@@ -60,7 +82,6 @@ module "keep_warm" {
     "${module.lambda_example_1.function_arn}" = {
       foo = "bar"
     }
-
     "${module.lambda_example_2.function_arn}" = {
       example = {
         a = 1
@@ -70,8 +91,8 @@ module "keep_warm" {
     }
   }
 
-  schedule_expression = "${var.schedule_expression}"
-  concurrency         = "${var.concurrency}"
+  schedule_expression = var.schedule_expression
+  concurrency         = var.concurrency
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -80,9 +101,9 @@ module "keep_warm" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_dynamodb_table" "example" {
-  name           = "${var.name}"
+  name           = var.name
   read_capacity  = 1
-  write_capacity = "${var.concurrency}"
+  write_capacity = var.concurrency
   hash_key       = "RequestId"
   range_key      = "FunctionId"
 
@@ -102,19 +123,19 @@ resource "aws_dynamodb_table" "example" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "access_dynamodb_1" {
-  role   = "${module.lambda_example_1.iam_role_id}"
-  policy = "${data.aws_iam_policy_document.access_dynamodb.json}"
+  role   = module.lambda_example_1.iam_role_id
+  policy = data.aws_iam_policy_document.access_dynamodb.json
 }
 
 resource "aws_iam_role_policy" "access_dynamodb_2" {
-  role   = "${module.lambda_example_2.iam_role_id}"
-  policy = "${data.aws_iam_policy_document.access_dynamodb.json}"
+  role   = module.lambda_example_2.iam_role_id
+  policy = data.aws_iam_policy_document.access_dynamodb.json
 }
 
 data "aws_iam_policy_document" "access_dynamodb" {
   statement {
     effect    = "Allow"
     actions   = ["dynamodb:*"]
-    resources = ["${aws_dynamodb_table.example.arn}"]
+    resources = [aws_dynamodb_table.example.arn]
   }
 }

@@ -5,14 +5,17 @@
 
 variable "lambda_function_name" {
   description = "The name of the lambda function."
+  type        = string
 }
 
 variable "lambda_function_arn" {
   description = "The ARN of the lambda function."
+  type        = string
 }
 
 variable "schedule_expression" {
   description = "An expression that defines the schedule for this lambda job. For example, cron(0 20 * * ? *) or rate(5 minutes)."
+  type        = string
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -22,5 +25,6 @@ variable "schedule_expression" {
 
 variable "namespace" {
   description = "The namespace to use for all resources created by this module. If not set, var.lambda-function_name, with '-scheduled' as a suffix, is used."
-  default     = ""
+  type        = string
+  default     = null
 }
