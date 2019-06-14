@@ -2,12 +2,21 @@
 # CREATE A LAMBDA FUNCTION AND SCHEDULE IT TO RUN ON A PERIODIC BASIS
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# ----------------------------------------------------------------------------------------------------------------------
+# REQUIRE A SPECIFIC TERRAFORM VERSION OR HIGHER
+# This module has been updated with 0.12 syntax, which means it is no longer compatible with any versions below 0.12.
+# ----------------------------------------------------------------------------------------------------------------------
+
+terraform {
+  required_version = ">= 0.12"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CONFIGURE OUR AWS CONNECTION
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "aws" {
-  region = "${var.aws_region}"
+  region = var.aws_region
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -15,16 +24,19 @@ provider "aws" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "lambda_function" {
+  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
+  # to a specific version of the modules, such as the following example:
+  # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
   source = "../../modules/lambda"
 
-  name = "${var.name}"
+  name        = var.name
   description = "An example of how to process images in S3 with Lambda"
 
   source_path = "${path.module}/javascript"
-  runtime = "nodejs6.10"
-  handler = "index.handler"
+  runtime     = "nodejs8.10"
+  handler     = "index.handler"
 
-  timeout = 30
+  timeout     = 30
   memory_size = 128
 }
 
@@ -33,9 +45,12 @@ module "lambda_function" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "scheduled" {
+  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
+  # to a specific version of the modules, such as the following example:
+  # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/scheduled-lambda-job?ref=v1.0.8"
   source = "../../modules/scheduled-lambda-job"
 
-  lambda_function_name = "${module.lambda_function.function_name}"
-  lambda_function_arn = "${module.lambda_function.function_arn}"
-  schedule_expression = "rate(1 minute)"
+  lambda_function_name = module.lambda_function.function_name
+  lambda_function_arn  = module.lambda_function.function_arn
+  schedule_expression  = "rate(1 minute)"
 }

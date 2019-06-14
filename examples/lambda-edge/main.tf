@@ -3,12 +3,21 @@
 # Note: this example does NOT yet have the CloudFront triggers integrated! You must enable them manually.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# ----------------------------------------------------------------------------------------------------------------------
+# REQUIRE A SPECIFIC TERRAFORM VERSION OR HIGHER
+# This module has been updated with 0.12 syntax, which means it is no longer compatible with any versions below 0.12.
+# ----------------------------------------------------------------------------------------------------------------------
+
+terraform {
+  required_version = ">= 0.12"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CONFIGURE OUR AWS CONNECTION
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "aws" {
-  region = "${var.aws_region}"
+  region = var.aws_region
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -16,15 +25,18 @@ provider "aws" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "lambda_edge" {
+  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
+  # to a specific version of the modules, such as the following example:
+  # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda-edge?ref=v1.0.8"
   source = "../../modules/lambda-edge"
 
-  name = "${var.name}"
+  name        = var.name
   description = "An example of how to interact with CloudFront with Lambda@Edge"
 
   source_path = "${path.module}/nodejs"
-  runtime = "nodejs6.10"
-  handler = "index.handler"
+  runtime     = "nodejs8.10"
+  handler     = "index.handler"
 
-  timeout = 30
+  timeout     = 30
   memory_size = 128
 }

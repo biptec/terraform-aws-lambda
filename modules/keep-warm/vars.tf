@@ -5,11 +5,13 @@
 
 variable "name" {
   description = "The name for this Lambda function. Also used to namespace the other resources created by this module."
+  type        = string
 }
 
 variable "function_to_event_map" {
   description = "A map where the keys are the ARNs of Lambda functions to invoke (to keep them warm) and the values are the event objects to send to those functions when invoking them."
-  type        = "map"
+  type        = any
+
   # Example:
   #
   # default = {
@@ -24,6 +26,7 @@ variable "function_to_event_map" {
 
 variable "schedule_expression" {
   description = "An expression that defines how often to invoke the functions in var.function_to_event_map. For example, cron(0 20 * * ? *) or rate(5 minutes)."
+  type        = string
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -33,5 +36,6 @@ variable "schedule_expression" {
 
 variable "concurrency" {
   description = "How many concurrent requests to send to each Lambda function in var.function_to_event_map. With Lambda, each concurrent requests to the same function spins up a new container that must be kept warm, so you'll want to set this number to roughly the expected concurrency you see in real-world usage."
+  type        = number
   default     = 1
 }

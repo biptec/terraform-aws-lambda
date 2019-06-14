@@ -1,7 +1,16 @@
 defaults: &defaults
-  working_directory: /home/circleci/.go_workspace/src/github.com/gruntwork-io/package-lambda
   machine:
-    image: circleci/classic:201808-01
+    enabled: true
+    image: "ubuntu-1604:201903-01"
+  environment:
+    GRUNTWORK_INSTALLER_VERSION: v0.0.21
+    TERRATEST_LOG_PARSER_VERSION: v0.13.13
+    MODULE_CI_VERSION: v0.13.12
+    TERRAFORM_VERSION: 0.12.1
+    TERRAGRUNT_VERSION: NONE
+    PACKER_VERSION: NONE
+    GOLANG_VERSION: 1.11.2
+
 
 version: 2.0
 jobs:
@@ -12,11 +21,18 @@ jobs:
     - run: &install_gruntwork_tooling
         name: install gruntwork tooling
         command: |
-          sudo apt-get -y update
-          curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
-          gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.0"
-          gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag v0.13.13
-          configure-environment-for-gruntwork-module --circle-ci-2 --use-go-dep --go-src-path test
+          curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
+          gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
+          gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "${TERRATEST_LOG_PARSER_VERSION}"
+          configure-environment-for-gruntwork-module \
+            --circle-ci-2-machine-executor \
+            --terraform-version ${TERRAFORM_VERSION} \
+            --terragrunt-version ${TERRAGRUNT_VERSION} \
+            --packer-version ${PACKER_VERSION} \
+            --use-go-dep \
+            --go-version ${GOLANG_VERSION} \
+            --go-src-path test
+
     - run:
         name: run tests
         command: |
