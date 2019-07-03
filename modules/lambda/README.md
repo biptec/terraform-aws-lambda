@@ -117,3 +117,35 @@ resource "aws_security_group_rule" "allow_all_outbound_to_vpc" {
 
 Check out the [lambda-vpc example](/examples/lambda-vpc) for working sample code. Make sure to note the Known Issues
 section in that example's README.
+
+## How do you share Lambda functions across multiple AWS accounts?
+
+If you want to have central S3 bucket that you use as repository for your Lambda functions in one AWS account (e.g., `shared-services`) and you want to allow all the other accounts (e.g., `dev`, `stage`, `prod`) to access that S3 bucket, you need to do the following: 
+
+1. In the `shared-services` account, add a bucket policy to allow access to the bucket from other AWS accounts:
+    ```json
+    {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Sid": "ReadOnlyAccessForExternalAccounts",
+               "Effect": "Allow",
+               "Principal": {
+                   "AWS": [
+                       "arn:aws:iam::222222222222:root",
+                       "arn:aws:iam::333333333333:root",
+                       "arn:aws:iam::444444444444:root"                       
+                   ]
+               },
+               "Action": [
+                   "s3:GetObjectVersion",
+                   "s3:GetObject"
+               ],
+               "Resource": "arn:aws:s3:::bucket-name/*"
+           }
+       ]
+    }
+    ```
+    `s3:GetObjectVersion` is only required if you want to use `s3 object versioning` when deploying `lambdas`. You also need to enable `bucket versioning` in such case.
+1. If you want to enable `encryption` for `S3 objects` you must use a customer master key, or CMK (see the [kms-master-key](https://github.com/gruntwork-io/module-security/tree/master/modules/kms-master-key) module) rather than the default key, and ensure that both the `shared-services` account and all the other accounts (`dev`, `stage`, `prod`) have access to that CMK.
+1. The IAM User or IAM Role which will be running `terraform apply` for the other accounts (`dev`, `stage`, `prod`) must also be explicitly granted access to the S3 bucket in (1) and the CMK in (2).
