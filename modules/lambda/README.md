@@ -120,7 +120,7 @@ section in that example's README.
 
 ## How do you share Lambda functions across multiple AWS accounts?
 
-If you want to have a central S3 bucket that you use as repository for your Lambda functions in one AWS account (e.g., `shared-services`) and you want to allow all the other accounts (e.g., `dev`, `stage`, `prod`) to access that S3 bucket, you need to do the following: 
+If you want to have a central S3 bucket that you use as a repository for your Lambda functions in one AWS account (e.g., `shared-services`) and you want to allow all the other accounts (e.g., `dev`, `stage`, `prod`) to access that S3 bucket, you need to do the following: 
 
 1. In the `shared-services` account, add a bucket policy to allow access to the bucket from other AWS accounts:
     ```json
