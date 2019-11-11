@@ -21,41 +21,21 @@ terraform {
 # blocks. Make sure to update all 2 permutations any time you make a change!!
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
+resource "aws_lambda_function" "function" {
   count = var.source_path == null ? 1 : 0
 
   function_name = var.name
   description   = var.description
   publish       = var.enable_versioning
 
-  s3_bucket         = var.s3_bucket
-  s3_key            = var.s3_key
-  s3_object_version = var.s3_object_version
+  # When source_path is set, it indicates that the function should come from the local file path.
+  filename         = var.source_path != null ? local.zip_file_path : null
+  source_code_hash = var.source_path != null ? local.source_code_hash : null
 
-  runtime     = var.runtime
-  handler     = var.handler
-  timeout     = var.timeout
-  memory_size = var.memory_size
-  kms_key_arn = var.kms_key_arn
-
-  role = aws_iam_role.lambda.arn
-
-  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
-  #
-  # dead_letter_config {
-  #   target_arn = "${var.dead_letter_target_arn}"
-  # }
-}
-
-resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
-  count = var.source_path != null ? 1 : 0
-
-  function_name = var.name
-  description   = var.description
-  publish       = var.enable_versioning
-
-  filename         = data.template_file.zip_file_path.rendered
-  source_code_hash = data.template_file.source_code_hash.rendered
+  # When source_path is not set (null), it indicates that the function should come from S3.
+  s3_bucket         = var.source_path == null ? var.s3_bucket : null
+  s3_key            = var.source_path == null ? var.s3_key : null
+  s3_object_version = var.source_path == null ? var.s3_object_version : null
 
   runtime     = var.runtime
   handler     = var.handler
@@ -89,12 +69,14 @@ data "template_file" "hash_from_source_code_zip" {
   template = filebase64sha256(var.source_path)
 }
 
-data "template_file" "source_code_hash" {
-  template = var.skip_zip ? join(",", data.template_file.hash_from_source_code_zip.*.rendered) : join(",", data.archive_file.source_code.*.output_base64sha256)
-}
+locals {
+  source_code_hash = (
+    var.skip_zip
+    ? join(",", data.template_file.hash_from_source_code_zip.*.rendered)
+    : join(",", data.archive_file.source_code.*.output_base64sha256)
+  )
 
-data "template_file" "zip_file_path" {
-  template = var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)
+  zip_file_path = var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

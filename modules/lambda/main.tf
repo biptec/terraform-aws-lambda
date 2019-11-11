@@ -14,15 +14,9 @@ terraform {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE LAMBDA FUNCTION
-# There are FOUR functions below, although only one will actually be created. This is because we have two optional
-# features--whether to run in a VPC or not and whether to find the deployment package in an S3 bucket or the local file
-# system--that are controlled via inline blocks, and there is no way to make inline blocks conditional in Terraform.
-# Therefore, to handle the 4 possible permutations, we copy/paste the same exact settings, other than these inline
-# blocks. Make sure to update all 4 permutations any time you make a change!!
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
-  count = var.run_in_vpc && var.source_path == null ? 1 : 0
+resource "aws_lambda_function" "function" {
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
   # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
   depends_on = [aws_iam_role_policy.network_interfaces_for_lamda]
@@ -31,83 +25,14 @@ resource "aws_lambda_function" "function_in_vpc_code_in_s3" {
   description   = var.description
   publish       = var.enable_versioning
 
-  s3_bucket         = var.s3_bucket
-  s3_key            = var.s3_key
-  s3_object_version = var.s3_object_version
+  # When source_path is set, it indicates that the function should come from the local file path.
+  filename         = var.source_path != null ? local.zip_file_path : null
+  source_code_hash = var.source_path != null ? local.source_code_hash : null
 
-  runtime     = var.runtime
-  handler     = var.handler
-  layers      = var.layers
-  timeout     = var.timeout
-  memory_size = var.memory_size
-  kms_key_arn = var.kms_key_arn
-
-  role = aws_iam_role.lambda.arn
-
-  vpc_config {
-    subnet_ids         = var.subnet_ids
-    security_group_ids = aws_security_group.lambda.*.id
-  }
-
-  environment {
-    variables = var.environment_variables
-  }
-
-  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
-  #
-  # dead_letter_config {
-  #   target_arn = "${var.dead_letter_target_arn}"
-  # }
-}
-
-resource "aws_lambda_function" "function_in_vpc_code_in_local_folder" {
-  count = var.run_in_vpc && var.source_path != null ? 1 : 0
-  # We need this policy to be created before we try to create the lambda job, or you get an error about not having
-  # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
-  depends_on = [aws_iam_role_policy.network_interfaces_for_lamda]
-
-  function_name = var.name
-  description   = var.description
-  publish       = var.enable_versioning
-
-  filename         = data.template_file.zip_file_path.rendered
-  source_code_hash = data.template_file.source_code_hash.rendered
-
-  runtime     = var.runtime
-  handler     = var.handler
-  layers      = var.layers
-  timeout     = var.timeout
-  memory_size = var.memory_size
-  kms_key_arn = var.kms_key_arn
-
-  role = aws_iam_role.lambda.arn
-
-  vpc_config {
-    subnet_ids         = var.subnet_ids
-    security_group_ids = aws_security_group.lambda.*.id
-  }
-
-  environment {
-    variables = var.environment_variables
-  }
-
-  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
-  #
-  # dead_letter_config {
-  #   target_arn = "${var.dead_letter_target_arn}"
-  # }
-}
-
-resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
-  count = (! var.run_in_vpc) && var.source_path == null ? 1 : 0
-
-  function_name = var.name
-  description   = var.description
-  publish       = var.enable_versioning
-
-  s3_bucket         = var.s3_bucket
-  s3_key            = var.s3_key
-  s3_object_version = var.s3_object_version
+  # When source_path is not set (null), it indicates that the function should come from S3.
+  s3_bucket         = var.source_path == null ? var.s3_bucket : null
+  s3_key            = var.source_path == null ? var.s3_key : null
+  s3_object_version = var.source_path == null ? var.s3_object_version : null
 
   runtime     = var.runtime
   handler     = var.handler
@@ -122,34 +47,14 @@ resource "aws_lambda_function" "function_not_in_vpc_code_in_s3" {
     variables = var.environment_variables
   }
 
-  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
-  #
-  # dead_letter_config {
-  #   target_arn = "${var.dead_letter_target_arn}"
-  # }
-}
-
-resource "aws_lambda_function" "function_not_in_vpc_code_in_local_folder" {
-  count = (! var.run_in_vpc) && var.source_path != null ? 1 : 0
-
-  function_name = var.name
-  description   = var.description
-  publish       = var.enable_versioning
-
-  filename         = data.template_file.zip_file_path.rendered
-  source_code_hash = data.template_file.source_code_hash.rendered
-
-  runtime     = var.runtime
-  handler     = var.handler
-  layers      = var.layers
-  timeout     = var.timeout
-  memory_size = var.memory_size
-  kms_key_arn = var.kms_key_arn
-
-  role = aws_iam_role.lambda.arn
-
-  environment {
-    variables = var.environment_variables
+  dynamic "vpc_config" {
+    # The content of the list does not matter, because we are using this as an on off switch based on the input
+    # variable.
+    for_each = var.run_in_vpc ? ["use_vpc_config"] : []
+    content {
+      subnet_ids         = var.subnet_ids
+      security_group_ids = aws_security_group.lambda.*.id
+    }
   }
 
   # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
@@ -176,13 +81,16 @@ data "template_file" "hash_from_source_code_zip" {
   template = filebase64sha256(var.source_path)
 }
 
-data "template_file" "source_code_hash" {
-  template = var.skip_zip ? join(",", data.template_file.hash_from_source_code_zip.*.rendered) : join(",", data.archive_file.source_code.*.output_base64sha256)
+locals {
+  source_code_hash = (
+    var.skip_zip
+    ? join(",", data.template_file.hash_from_source_code_zip.*.rendered)
+    : join(",", data.archive_file.source_code.*.output_base64sha256)
+  )
+
+  zip_file_path = var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)
 }
 
-data "template_file" "zip_file_path" {
-  template = var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)
-}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A SECURITY GROUP FOR THE LAMBDA JOB
@@ -256,12 +164,10 @@ resource "aws_iam_role_policy" "network_interfaces_for_lamda" {
 
   name   = "${var.name}-network-interfaces"
   role   = aws_iam_role.lambda.id
-  policy = data.aws_iam_policy_document.network_interfaces_for_lamda.*.json[count.index]
+  policy = data.aws_iam_policy_document.network_interfaces_for_lamda.json
 }
 
 data "aws_iam_policy_document" "network_interfaces_for_lamda" {
-  count = var.run_in_vpc ? 1 : 0
-
   statement {
     effect = "Allow"
 

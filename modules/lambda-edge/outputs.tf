@@ -1,21 +1,9 @@
 output "function_name" {
-  value = element(
-    concat(
-      aws_lambda_function.function_not_in_vpc_code_in_s3.*.function_name,
-      aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.function_name,
-    ),
-    0,
-  )
+  value = aws_lambda_function.function.function_name
 }
 
 output "function_arn" {
-  value = element(
-    concat(
-      aws_lambda_function.function_not_in_vpc_code_in_s3.*.arn,
-      aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.arn,
-    ),
-    0,
-  )
+  value = aws_lambda_function.function.arn
 }
 
 output "iam_role_id" {
@@ -27,31 +15,13 @@ output "iam_role_arn" {
 }
 
 output "invoke_arn" {
-  value = element(
-    concat(
-      aws_lambda_function.function_not_in_vpc_code_in_s3.*.invoke_arn,
-      aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.invoke_arn,
-    ),
-    0,
-  )
+  value = aws_lambda_function.function.invoke_arn
 }
 
 output "qualified_arn" {
-  value = element(
-    concat(
-      aws_lambda_function.function_not_in_vpc_code_in_s3.*.qualified_arn,
-      aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.qualified_arn,
-    ),
-    0,
-  )
+  value = aws_lambda_function.function.qualified_arn
 }
 
 output "version" {
-  value = element(
-    concat(
-      aws_lambda_function.function_not_in_vpc_code_in_s3.*.version,
-      aws_lambda_function.function_not_in_vpc_code_in_local_folder.*.version,
-    ),
-    0,
-  )
+  value = aws_lambda_function.function.version
 }
