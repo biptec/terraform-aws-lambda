@@ -22,8 +22,6 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "function" {
-  count = var.source_path == null ? 1 : 0
-
   function_name = var.name
   description   = var.description
   publish       = var.enable_versioning
