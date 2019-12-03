@@ -67,7 +67,7 @@ func testLambdaKeepWarm(t *testing.T, concurrency int) {
 
 		// The Lambda functions should run once per minute, and they take 5 seconds to execute, so adding some buffer,
 		// we should never have to wait longer than this
-		maxWaitTime := 75 * time.Second
+		maxWaitTime := 90 * time.Second
 
 		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 1, maxWaitTime)
 		assertFunctionsHaveBeenInvoked(t, awsRegion, terraformOptions, concurrency, 2, maxWaitTime)
