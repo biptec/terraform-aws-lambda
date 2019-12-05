@@ -122,6 +122,12 @@ variable "skip_zip" {
   default     = false
 }
 
+variable "tags" {
+  description = "A map of tags to apply to the Lambda function."
+  type        = map(string)
+  default     = {}
+}
+
 # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
 #
 # variable "dead_letter_target_arn" {

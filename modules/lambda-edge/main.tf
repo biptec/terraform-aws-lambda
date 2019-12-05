@@ -43,6 +43,7 @@ resource "aws_lambda_function" "function" {
 
   role = aws_iam_role.lambda.arn
 
+  tags = var.tags
   # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
   #
   # dead_letter_config {

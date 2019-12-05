@@ -39,4 +39,7 @@ module "lambda_edge" {
 
   timeout     = 30
   memory_size = 128
+  tags = {
+    Name = "lambda-edge"
+  }
 }

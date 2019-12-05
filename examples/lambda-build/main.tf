@@ -43,6 +43,9 @@ module "lambda_s3" {
   # configure the PYTHONPATH environment variable so it knows where to find dependencies
   # (https://docs.python.org/2/using/cmdline.html#envvar-PYTHONPATH).
   handler = "src/index.handler"
+  tags = {
+    Name = "lambda-s3"
+  }
   environment_variables = {
     PYTHONPATH = "/var/task/dependencies"
   }

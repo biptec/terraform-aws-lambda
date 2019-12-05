@@ -43,6 +43,8 @@ resource "aws_lambda_function" "function" {
 
   role = aws_iam_role.lambda.arn
 
+  tags = var.tags
+
   environment {
     variables = var.environment_variables
   }
