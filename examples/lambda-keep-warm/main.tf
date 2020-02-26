@@ -33,7 +33,7 @@ module "lambda_example_1" {
   name = "${var.name}-example-1"
 
   source_path = "${path.module}/src"
-  runtime     = "nodejs8.10"
+  runtime     = "nodejs12.x"
   handler     = "index.handler"
 
   timeout     = 30
@@ -53,7 +53,7 @@ module "lambda_example_2" {
   name = "${var.name}-example-2"
 
   source_path = "${path.module}/src"
-  runtime     = "nodejs8.10"
+  runtime     = "nodejs12.x"
   handler     = "index.handler"
 
   timeout     = 30

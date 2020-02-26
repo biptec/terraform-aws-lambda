@@ -33,7 +33,7 @@ module "lambda_function" {
   description = "An example of how to process images in S3 with Lambda"
 
   source_path = "${path.module}/javascript"
-  runtime     = "nodejs8.10"
+  runtime     = "nodejs12.x"
   handler     = "index.handler"
 
   timeout     = 30

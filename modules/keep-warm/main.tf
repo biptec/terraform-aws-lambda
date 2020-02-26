@@ -18,7 +18,7 @@ module "keep_warm" {
   description = "A lambda function that invokes other lambda functions on a scheduled basis to keep them warm"
 
   source_path = "${path.module}/src"
-  runtime     = "nodejs8.10"
+  runtime     = "nodejs12.x"
   handler     = "index.handler"
 
   timeout     = 30
