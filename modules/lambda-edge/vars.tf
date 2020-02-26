@@ -65,9 +65,9 @@ variable "description" {
 }
 
 variable "runtime" {
-  description = "The runtime environment for the Lambda function (e.g. nodejs, python2.7, java8). See https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Runtime for all possible values. Currently Lambda@Edge supports only nodejs8.10 and nodejs10.x."
+  description = "The runtime environment for the Lambda function (e.g. nodejs, python2.7, java8). See https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Runtime for all possible values. Currently Lambda@Edge supports only nodejs10.x and python3.7."
   type        = string
-  default     = "nodejs8.10"
+  default     = "nodejs10.x"
 }
 
 variable "enable_versioning" {

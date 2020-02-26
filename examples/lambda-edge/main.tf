@@ -34,7 +34,7 @@ module "lambda_edge" {
   description = "An example of how to interact with CloudFront with Lambda@Edge"
 
   source_path = "${path.module}/nodejs"
-  runtime     = "nodejs8.10"
+  runtime     = "nodejs12.x"
   handler     = "index.handler"
 
   timeout     = 30
