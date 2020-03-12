@@ -28,7 +28,7 @@ func TestLambdaBuild(t *testing.T) {
 	// os.Setenv("SKIP_destroy", "true")
 
 	test_structure.RunTestStage(t, "build", func() {
-		buildDeploymentPackage(t)
+		buildDeploymentPackage(t, testFolder)
 	})
 
 	test_structure.RunTestStage(t, "setup", func() {
@@ -76,9 +76,9 @@ func TestLambdaBuildCreateResourcesFalse(t *testing.T) {
 	assert.Equal(t, resourceCounts.Destroy, 0)
 }
 
-func buildDeploymentPackage(t *testing.T) {
+func buildDeploymentPackage(t *testing.T, testFolder string) {
 	logger.Logf(t, "Building deployment package for lambda-build example")
-	cmd := shell.Command{Command: "../examples/lambda-build/python/build.sh"}
+	cmd := shell.Command{Command: filepath.Join(testFolder, "python/build.sh")}
 	shell.RunCommand(t, cmd)
 }
 
