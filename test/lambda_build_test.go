@@ -16,9 +16,6 @@ import (
 func TestLambdaBuild(t *testing.T) {
 	t.Parallel()
 
-	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "examples/lambda-build")
-	workingDir := filepath.Join("..", "stages", t.Name())
-
 	// Uncomment the items below to skip certain parts of the test
 	// os.Setenv("SKIP_build", "true")
 	// os.Setenv("SKIP_setup", "true")
@@ -26,6 +23,9 @@ func TestLambdaBuild(t *testing.T) {
 	// os.Setenv("SKIP_validate", "true")
 	// os.Setenv("SKIP_perpetual_diff", "true")
 	// os.Setenv("SKIP_destroy", "true")
+
+	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "examples/lambda-build")
+	workingDir := filepath.Join("..", "stages", t.Name())
 
 	test_structure.RunTestStage(t, "build", func() {
 		buildDeploymentPackage(t, testFolder)
