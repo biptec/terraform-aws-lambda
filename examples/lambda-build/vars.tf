@@ -14,3 +14,9 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
 }
+
+variable "create_resources" {
+  description = "Set to false to have this module skip creating resources. This weird parameter exists solely because Terraform does not support conditional modules. Therefore, this is a hack to allow you to conditionally decide if this module should create anything or not."
+  type        = bool
+  default     = true
+}

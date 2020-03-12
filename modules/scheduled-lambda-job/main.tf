@@ -14,21 +14,24 @@ terraform {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 resource "aws_cloudwatch_event_rule" "scheduled_lambda_job" {
+  count               = var.create_resources ? 1 : 0
   name                = var.namespace == null ? "${var.lambda_function_name}-scheduled" : var.namespace
   description         = "Event that runs the lambda function ${var.lambda_function_name} on a periodic schedule"
   schedule_expression = var.schedule_expression
 }
 
 resource "aws_cloudwatch_event_target" "scheduled_lambda_job" {
-  rule      = aws_cloudwatch_event_rule.scheduled_lambda_job.name
+  count     = var.create_resources ? 1 : 0
+  rule      = var.create_resources ? aws_cloudwatch_event_rule.scheduled_lambda_job[0].name : null
   target_id = var.namespace == null ? "${var.lambda_function_name}-scheduled" : var.namespace
   arn       = var.lambda_function_arn
 }
 
 resource "aws_lambda_permission" "allow_execution_from_cloudwatch" {
+  count         = var.create_resources ? 1 : 0
   statement_id  = var.namespace == null ? "${var.lambda_function_name}-scheduled" : var.namespace
   action        = "lambda:InvokeFunction"
   function_name = var.lambda_function_arn
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.scheduled_lambda_job.arn
+  source_arn    = var.create_resources ? aws_cloudwatch_event_rule.scheduled_lambda_job[0].arn : null
 }
