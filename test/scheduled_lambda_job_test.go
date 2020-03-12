@@ -1,15 +1,18 @@
 package test
 
 import (
-	"testing"
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go/aws"
 	"fmt"
-	"time"
 	"strings"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/gruntwork-io/terratest/modules/retry"
+	"testing"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	terraws "github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
+	"github.com/stretchr/testify/assert"
 )
 
 const EXPECTED_LOG_ENTRY = "lambda-job-example completed successfully"
@@ -17,12 +20,26 @@ const EXPECTED_LOG_ENTRY = "lambda-job-example completed successfully"
 func TestScheduledLambdaJob(t *testing.T) {
 	t.Parallel()
 
-	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/scheduled-lambda-job")
+	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "examples/scheduled-lambda-job")
+	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, testFolder)
 	defer terraform.Destroy(t, terraformOptions)
 
 	terraform.InitAndApply(t, terraformOptions)
 
 	checkLogsForSuccessfulLambdaJobExecution(t, terraformOptions, awsRegion)
+}
+
+func TestScheduledLambdaJobCreateResourcesFalse(t *testing.T) {
+	t.Parallel()
+
+	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "examples/scheduled-lambda-job")
+	terraformOptions, _, _ := createBaseTerraformOptions(t, testFolder)
+	terraformOptions.Vars["create_resources"] = false
+	planOut := terraform.InitAndPlan(t, terraformOptions)
+	resourceCounts := terraform.GetResourceCount(t, planOut)
+	assert.Equal(t, resourceCounts.Add, 0)
+	assert.Equal(t, resourceCounts.Change, 0)
+	assert.Equal(t, resourceCounts.Destroy, 0)
 }
 
 func checkLogsForSuccessfulLambdaJobExecution(t *testing.T, terraformOptions *terraform.Options, awsRegion string) {

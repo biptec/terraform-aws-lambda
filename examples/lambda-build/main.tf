@@ -27,7 +27,8 @@ module "lambda_s3" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
   # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
-  source = "../../modules/lambda"
+  source           = "../../modules/lambda"
+  create_resources = var.create_resources
 
   name        = var.name
   description = "An example of how to process images in S3 with Lambda"

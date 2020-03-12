@@ -17,6 +17,8 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "function" {
+  count = var.create_resources ? 1 : 0
+
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
   # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
   depends_on = [aws_iam_role_policy.network_interfaces_for_lamda]
@@ -41,7 +43,7 @@ resource "aws_lambda_function" "function" {
   memory_size = var.memory_size
   kms_key_arn = var.kms_key_arn
 
-  role = aws_iam_role.lambda.arn
+  role = var.create_resources ? aws_iam_role.lambda[0].arn : null
 
   tags = var.tags
 
@@ -72,14 +74,14 @@ resource "aws_lambda_function" "function" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "archive_file" "source_code" {
-  count       = (! var.skip_zip) && var.source_path != null ? 1 : 0
+  count       = var.create_resources && (! var.skip_zip) && var.source_path != null ? 1 : 0
   type        = "zip"
   source_dir  = var.source_path
   output_path = var.zip_output_path == null ? "${path.module}/${var.name}_lambda.zip" : var.zip_output_path
 }
 
 data "template_file" "hash_from_source_code_zip" {
-  count    = var.skip_zip ? 1 : 0
+  count    = var.create_resources && var.skip_zip ? 1 : 0
   template = filebase64sha256(var.source_path)
 }
 
@@ -102,7 +104,7 @@ locals {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_security_group" "lambda" {
-  count = var.run_in_vpc ? 1 : 0
+  count = var.create_resources && var.run_in_vpc ? 1 : 0
 
   name        = "${var.name}-lambda"
   description = "Security group for the lambda function ${var.name}"
@@ -116,6 +118,7 @@ resource "aws_security_group" "lambda" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "lambda" {
+  count                = var.create_resources ? 1 : 0
   name                 = var.name
   assume_role_policy   = data.aws_iam_policy_document.lambda_role.json
   permissions_boundary = var.lambda_role_permissions_boundary_arn
@@ -138,8 +141,9 @@ data "aws_iam_policy_document" "lambda_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "logging_for_lambda" {
+  count  = var.create_resources ? 1 : 0
   name   = "${var.name}-logging"
-  role   = aws_iam_role.lambda.id
+  role   = var.create_resources ? aws_iam_role.lambda[0].id : null
   policy = data.aws_iam_policy_document.logging_for_lambda.json
 }
 
@@ -163,10 +167,10 @@ data "aws_iam_policy_document" "logging_for_lambda" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "network_interfaces_for_lamda" {
-  count = var.run_in_vpc ? 1 : 0
+  count = var.create_resources && var.run_in_vpc ? 1 : 0
 
   name   = "${var.name}-network-interfaces"
-  role   = aws_iam_role.lambda.id
+  role   = var.create_resources ? aws_iam_role.lambda[0].id : 0
   policy = data.aws_iam_policy_document.network_interfaces_for_lamda.json
 }
 

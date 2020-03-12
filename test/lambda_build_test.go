@@ -2,33 +2,78 @@ package test
 
 import (
 	"encoding/json"
+	"path/filepath"
+	"strings"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 func TestLambdaBuild(t *testing.T) {
 	t.Parallel()
 
-	buildDeploymentPackage(t)
+	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "examples/lambda-build")
+	workingDir := filepath.Join("..", "stages", t.Name())
 
-	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/lambda-build")
-	defer terraform.Destroy(t, terraformOptions)
+	// Uncomment the items below to skip certain parts of the test
+	// os.Setenv("SKIP_build", "true")
+	// os.Setenv("SKIP_setup", "true")
+	// os.Setenv("SKIP_apply", "true")
+	// os.Setenv("SKIP_validate", "true")
+	// os.Setenv("SKIP_perpetual_diff", "true")
+	// os.Setenv("SKIP_destroy", "true")
 
-	terraform.InitAndApply(t, terraformOptions)
+	test_structure.RunTestStage(t, "build", func() {
+		buildDeploymentPackage(t)
+	})
 
-	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
-	requestPayload := createPayloadFormLambdaBuildFunction(t)
+	test_structure.RunTestStage(t, "setup", func() {
+		terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, testFolder)
+		test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+		test_structure.SaveString(t, workingDir, "region", awsRegion)
+	})
 
-	responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
-	assertValidResponsePayload(t, []byte(responsePayload))
+	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+	awsRegion := test_structure.LoadString(t, workingDir, "region")
 
-	// Verify perpetual diff issue https://github.com/gruntwork-io/package-lambda/issues/26
-	exitCode := terraform.PlanExitCode(t, terraformOptions)
-	assert.Equal(t, exitCode, 0)
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		terraform.Destroy(t, terraformOptions)
+	})
+
+	test_structure.RunTestStage(t, "apply", func() {
+		terraform.InitAndApply(t, terraformOptions)
+	})
+
+	test_structure.RunTestStage(t, "verify", func() {
+		functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
+		requestPayload := createPayloadFormLambdaBuildFunction(t)
+
+		responsePayload := triggerLambdaFunction(t, functionName, requestPayload, awsRegion)
+		assertValidResponsePayload(t, []byte(responsePayload))
+	})
+
+	test_structure.RunTestStage(t, "perpetual_diff", func() {
+		// Verify perpetual diff issue https://github.com/gruntwork-io/package-lambda/issues/26
+		exitCode := terraform.PlanExitCode(t, terraformOptions)
+		assert.Equal(t, exitCode, 0)
+	})
+}
+
+func TestLambdaBuildCreateResourcesFalse(t *testing.T) {
+	t.Parallel()
+
+	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "examples/lambda-build")
+	terraformOptions, _, _ := createBaseTerraformOptions(t, testFolder)
+	terraformOptions.Vars["create_resources"] = false
+	planOut := terraform.InitAndPlan(t, terraformOptions)
+	resourceCounts := terraform.GetResourceCount(t, planOut)
+	assert.Equal(t, resourceCounts.Add, 0)
+	assert.Equal(t, resourceCounts.Change, 0)
+	assert.Equal(t, resourceCounts.Destroy, 0)
 }
 
 func buildDeploymentPackage(t *testing.T) {

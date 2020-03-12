@@ -1,17 +1,17 @@
 output "function_name" {
-  value = aws_lambda_function.function.function_name
+  value = var.create_resources ? aws_lambda_function.function[0].function_name : null
 }
 
 output "function_arn" {
-  value = aws_lambda_function.function.arn
+  value = var.create_resources ? aws_lambda_function.function[0].arn : null
 }
 
 output "iam_role_id" {
-  value = aws_iam_role.lambda.id
+  value = var.create_resources ? aws_iam_role.lambda[0].id : null
 }
 
 output "iam_role_arn" {
-  value = aws_iam_role.lambda.arn
+  value = var.create_resources ? aws_iam_role.lambda[0].arn : null
 }
 
 // Will only show up if var.run_in_vpc is true
@@ -20,13 +20,13 @@ output "security_group_id" {
 }
 
 output "invoke_arn" {
-  value = aws_lambda_function.function.invoke_arn
+  value = var.create_resources ? aws_lambda_function.function[0].invoke_arn : null
 }
 
 output "qualified_arn" {
-  value = aws_lambda_function.function.qualified_arn
+  value = var.create_resources ? aws_lambda_function.function[0].qualified_arn : null
 }
 
 output "version" {
-  value = aws_lambda_function.function.version
+  value = var.create_resources ? aws_lambda_function.function[0].version : null
 }
