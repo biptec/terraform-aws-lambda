@@ -94,6 +94,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "lambda_role_permissions_boundary_arn" {
+  description = "The ARN of the policy that is used to set the permissions boundary for the IAM role for the Lambda function."
+  type        = string
+  default     = null
+}
+
 # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
 #
 # variable "dead_letter_target_arn" {
