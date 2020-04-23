@@ -34,3 +34,9 @@ variable "create_resources" {
   type        = bool
   default     = true
 }
+
+variable "tags" {
+  description = "A map of tags to apply to the event rule."
+  type        = map(string)
+  default     = {}
+}
