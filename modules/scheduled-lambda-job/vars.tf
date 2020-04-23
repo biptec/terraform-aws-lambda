@@ -24,7 +24,7 @@ variable "schedule_expression" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "namespace" {
-  description = "The namespace to use for all resources created by this module. If not set, var.lambda-function_name, with '-scheduled' as a suffix, is used."
+  description = "The namespace to use for all resources created by this module. If not set, var.lambda_function_name, with '-scheduled' as a suffix, is used."
   type        = string
   default     = null
 }
