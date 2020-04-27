@@ -92,6 +92,8 @@ resource "aws_iam_role" "lambda" {
   name                 = var.name
   assume_role_policy   = data.aws_iam_policy_document.lambda_role.json
   permissions_boundary = var.lambda_role_permissions_boundary_arn
+
+  tags = var.tags
 }
 
 data "aws_iam_policy_document" "lambda_role" {

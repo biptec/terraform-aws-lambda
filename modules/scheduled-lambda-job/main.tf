@@ -18,6 +18,8 @@ resource "aws_cloudwatch_event_rule" "scheduled_lambda_job" {
   name                = var.namespace == null ? "${var.lambda_function_name}-scheduled" : var.namespace
   description         = "Event that runs the lambda function ${var.lambda_function_name} on a periodic schedule"
   schedule_expression = var.schedule_expression
+
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_event_target" "scheduled_lambda_job" {

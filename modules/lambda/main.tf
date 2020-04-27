@@ -109,6 +109,8 @@ resource "aws_security_group" "lambda" {
   name        = "${var.name}-lambda"
   description = "Security group for the lambda function ${var.name}"
   vpc_id      = var.vpc_id
+
+  tags = var.tags
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -122,6 +124,8 @@ resource "aws_iam_role" "lambda" {
   name                 = var.name
   assume_role_policy   = data.aws_iam_policy_document.lambda_role.json
   permissions_boundary = var.lambda_role_permissions_boundary_arn
+
+  tags = var.tags
 }
 
 data "aws_iam_policy_document" "lambda_role" {
