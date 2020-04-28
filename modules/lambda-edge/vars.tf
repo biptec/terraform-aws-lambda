@@ -53,6 +53,12 @@ variable "memory_size" {
   type        = number
 }
 
+variable "reserved_concurrent_executions" {
+  description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
+  type        = number
+  default     = -1
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL MODULE PARAMETERS
 # These variables have defaults, but may be overridden by the operator.
