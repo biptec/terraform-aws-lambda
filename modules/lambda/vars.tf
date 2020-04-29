@@ -146,3 +146,9 @@ variable "create_resources" {
   type        = bool
   default     = true
 }
+
+variable "reserved_concurrent_executions" {
+  description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
+  type        = number
+  default     = null
+}

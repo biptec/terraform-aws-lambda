@@ -43,6 +43,8 @@ resource "aws_lambda_function" "function" {
   memory_size = var.memory_size
   kms_key_arn = var.kms_key_arn
 
+  reserved_concurrent_executions = var.reserved_concurrent_executions
+
   role = var.create_resources ? aws_iam_role.lambda[0].arn : null
 
   tags = var.tags
