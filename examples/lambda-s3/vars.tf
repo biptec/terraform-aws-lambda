@@ -14,3 +14,9 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
 }
+
+variable "reserved_concurrent_executions" {
+  description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
+  type        = number
+  default     = null
+}

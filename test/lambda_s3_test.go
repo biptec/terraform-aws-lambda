@@ -6,16 +6,25 @@ import (
 	"fmt"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestLambdaS3(t *testing.T) {
+	LambdaS3Test(t, -1)
+}
+
+func LambdaS3Test(t *testing.T, reservedConcurrentExecutions int) {
 	t.Parallel()
 
-	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, "../examples/lambda-s3")
+	terraformDir := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/lambda-s3")
+	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, terraformDir)
 	defer terraform.Destroy(t, terraformOptions)
 
+	if reservedConcurrentExecutions != -1 {
+		terraformOptions.Vars["reserved_concurrent_executions"] = reservedConcurrentExecutions
+	}
 	terraform.InitAndApply(t, terraformOptions)
 
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")

@@ -64,12 +64,6 @@ variable "memory_size" {
   type        = number
 }
 
-variable "reserved_concurrent_executions" {
-  description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
-  type        = number
-  default     = -1
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL MODULE PARAMETERS
 # These variables have defaults, but may be overridden by the operator.
@@ -151,4 +145,10 @@ variable "create_resources" {
   description = "Set to false to have this module skip creating resources. This weird parameter exists solely because Terraform does not support conditional modules. Therefore, this is a hack to allow you to conditionally decide if this module should create anything or not."
   type        = bool
   default     = true
+}
+
+variable "reserved_concurrent_executions" {
+  description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
+  type        = number
+  default     = null
 }

@@ -53,12 +53,6 @@ variable "memory_size" {
   type        = number
 }
 
-variable "reserved_concurrent_executions" {
-  description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
-  type        = number
-  default     = -1
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL MODULE PARAMETERS
 # These variables have defaults, but may be overridden by the operator.
@@ -112,3 +106,9 @@ variable "lambda_role_permissions_boundary_arn" {
 #  description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
 #  default = ""
 #}
+
+variable "reserved_concurrent_executions" {
+  description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
+  type        = number
+  default     = null
+}

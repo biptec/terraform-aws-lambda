@@ -39,6 +39,8 @@ module "lambda_s3" {
 
   timeout     = 30
   memory_size = 128
+
+  reserved_concurrent_executions = var.reserved_concurrent_executions
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
