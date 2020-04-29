@@ -5,5 +5,6 @@ import (
 )
 
 func TestLambdaS3Reserved(t *testing.T) {
-	LambdaS3Test(t, 1)
+	reservedConcurrentExecutions := 1
+	LambdaS3Test(t, &reservedConcurrentExecutions)
 }
