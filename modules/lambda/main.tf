@@ -63,11 +63,9 @@ resource "aws_lambda_function" "function" {
     }
   }
 
-  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
-  #
-  # dead_letter_config {
-  #   target_arn = "${var.dead_letter_target_arn}"
-  # }
+  dead_letter_config {
+    target_arn = "${var.dead_letter_target_arn}"
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

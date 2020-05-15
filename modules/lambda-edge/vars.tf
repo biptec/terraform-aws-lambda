@@ -100,12 +100,10 @@ variable "lambda_role_permissions_boundary_arn" {
   default     = null
 }
 
-# Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
-#
-# variable "dead_letter_target_arn" {
-#  description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
-#  default = ""
-#}
+variable "dead_letter_target_arn" {
+  description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
+  default     = ""
+}
 
 variable "reserved_concurrent_executions" {
   description = "The amount of reserved concurrent executions for this lambda function or -1 if unreserved."
