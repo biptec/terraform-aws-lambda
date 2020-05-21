@@ -64,7 +64,7 @@ resource "aws_lambda_function" "function" {
   }
 
   dead_letter_config {
-    target_arn = "${var.dead_letter_target_arn}"
+    target_arn = var.dead_letter_target_arn
   }
 }
 
