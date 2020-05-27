@@ -41,7 +41,7 @@ module "lambda_dlq" {
   source = "../../modules/lambda"
 
   name        = var.name
-  description = "An example of sending execution errors to SNS"
+  description = "An example of sending execution errors to SQS"
 
   source_path = "${path.module}/python"
   runtime     = "python3.7"
@@ -76,4 +76,14 @@ data "aws_iam_policy_document" "sqs_send" {
 resource "aws_iam_role_policy" "lambda_sqs_send" {
   role   = module.lambda_dlq.iam_role_id
   policy = data.aws_iam_policy_document.sqs_send.json
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ASYNCHRONOUS CONFIG
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_lambda_function_event_invoke_config" "async_config" {
+  function_name                = module.lambda_dlq.function_name
+  maximum_event_age_in_seconds = 60
+  maximum_retry_attempts       = 0
 }
