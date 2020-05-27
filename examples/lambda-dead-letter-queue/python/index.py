@@ -4,7 +4,7 @@ logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-"""Main entrypoint for the Lambda function. It simply returns "Hello, World".
+"""Main entrypoint for the Lambda function. It raises an exception to send to DLQ".
 """
 def handler(event, context):
     logger.info('Received event %s', event)
