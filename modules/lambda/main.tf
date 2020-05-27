@@ -63,8 +63,13 @@ resource "aws_lambda_function" "function" {
     }
   }
 
-  dead_letter_config {
-    target_arn = var.dead_letter_target_arn
+  # Terraform will error if target_arn for dead_letter_config is just nil.
+  # Workaround is to dynamically generic this block if the string length for dead_letter_target_arn is not 0.
+  dynamic "dead_letter_config" {
+    for_each = signum(length(var.dead_letter_target_arn)) == 0 ? [] : [1]
+    content {
+      target_arn = var.dead_letter_target_arn
+    }
   }
 }
 
