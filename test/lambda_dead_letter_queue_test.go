@@ -28,11 +28,11 @@ func TestLambdaDLQ(t *testing.T) {
 func checkSQSForMessages(t *testing.T, terraformOptions *terraform.Options, awsRegion string) {
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 	queueURL := terraform.OutputRequired(t, terraformOptions, "queue_url")
-	timeoutSec := 300
+	timeoutSec := 180
 
 	_, requestPayload := createEventPayloadForDLQLambdaFunction(t)
 
-  triggerLambdaFunctionAsync(t, functionName, requestPayload, awsRegion)
+	triggerLambdaFunctionAsync(t, functionName, requestPayload, awsRegion)
 
 	queueResponse := terraws.WaitForQueueMessage(t, awsRegion, queueURL, timeoutSec)
 	fmt.Println(queueResponse)
