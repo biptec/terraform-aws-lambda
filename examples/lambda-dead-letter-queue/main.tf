@@ -59,26 +59,21 @@ module "lambda_dlq" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# LAMBDA SNS PERMISSIONS
+# LAMBDA SQS PERMISSIONS
 # ---------------------------------------------------------------------------------------------------------------------
-#data "aws_iam_policy_document" "sqs_send" {
-#  statement {
-#    sid    = "AllowSendMessage"
-#    effect = "Allow"
-#    actions = [
-#      "sqs:SendMessage",
-#    ]
-#    resources = [module.sqs.queue_arn]
-#
-#    principals {
-#      type        = "AWS"
-#      identifiers = [module.lambda_dlq.iam_role_arn]
-#    }
-#  }
-#}
-#
-#resource "aws_sqs_queue_policy" "queue_policy" {
-#  queue_url = module.sqs.queue_url
-#  policy    = data.aws_iam_policy_document.sqs_send.json
-#}
-#
+data "aws_iam_policy_document" "sqs_send" {
+  statement {
+    sid    = "AllowSendMessage"
+    effect = "Allow"
+    actions = [
+      "sqs:SendMessage",
+    ]
+    resources = [module.sqs.queue_arn]
+
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_sqs_send" {
+  role   = module.lambda_dlq.iam_role_id
+  policy = data.aws_iam_policy_document.sqs_send.json
+}
