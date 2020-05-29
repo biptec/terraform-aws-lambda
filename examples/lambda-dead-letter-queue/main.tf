@@ -34,6 +34,7 @@ module "sqs" {
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE LAMBDA FUNCTION
 # ---------------------------------------------------------------------------------------------------------------------
+
 module "lambda_dlq" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
@@ -61,6 +62,7 @@ module "lambda_dlq" {
 # ---------------------------------------------------------------------------------------------------------------------
 # LAMBDA SQS PERMISSIONS
 # ---------------------------------------------------------------------------------------------------------------------
+
 data "aws_iam_policy_document" "sqs_send" {
   statement {
     sid    = "AllowSendMessage"
