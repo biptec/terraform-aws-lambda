@@ -10,6 +10,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLambdaDLQ(t *testing.T) {
@@ -35,7 +36,7 @@ func checkSQSForMessages(t *testing.T, terraformOptions *terraform.Options, awsR
 	triggerLambdaFunctionAsync(t, functionName, requestPayload, awsRegion)
 
 	queueResponse := terraws.WaitForQueueMessage(t, awsRegion, queueURL, timeoutSec)
-	fmt.Println(queueResponse)
+	logger.Logf(t, "SQS Message Response %v: ", queueResponse)
 	assert.NoError(t, queueResponse.Error)
 	assert.Equal(t, string(requestPayload), queueResponse.MessageBody)
 
@@ -49,9 +50,7 @@ func createEventPayloadForDLQLambdaFunction(t *testing.T) (map[string]string, []
 	logger.Logf(t, "Using event object %v as request payload to Lambda function.", event)
 
 	out, err := json.Marshal(event)
-	if err != nil {
-		t.Fatalf("Failed to convert event object %v to JSON: %v", event, err)
-	}
+	require.NoError(t, err)
 
 	return event, out
 }
