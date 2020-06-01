@@ -49,7 +49,7 @@ func readFileAsString(t *testing.T, filePath string) string {
 	return string(out)
 }
 
-func triggerLambdaFunctionWithCustomAction(t *testing.T, functionName string, payload []byte, awsRegion string, action func(string) (string, error)) string {
+func triggerLambdaFunctionWithCustomAction(t *testing.T, functionName string, payload []byte, invocationType string, awsRegion string, action func(string) (string, error)) string {
 	description := fmt.Sprintf("Trigger lambda function %s", functionName)
 	maxRetries := 10
 	timeBetweenRetries := 5 * time.Second
@@ -57,7 +57,7 @@ func triggerLambdaFunctionWithCustomAction(t *testing.T, functionName string, pa
 	// We have to retry Lambda invocations due to some strange, intermittent error that has appeared recently:
 	// "AccessDeniedException: The role defined for the function cannot be assumed by Lambda."
 	return retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		out, err := triggerLambdaFunctionE(t, functionName, payload, awsRegion)
+		out, err := triggerLambdaFunctionE(t, functionName, payload, invocationType, awsRegion)
 		if err != nil {
 			return "", err
 		}
@@ -67,10 +67,15 @@ func triggerLambdaFunctionWithCustomAction(t *testing.T, functionName string, pa
 
 func triggerLambdaFunction(t *testing.T, functionName string, payload []byte, awsRegion string) string {
 	identity := func(str string) (string, error) { return str, nil }
-	return triggerLambdaFunctionWithCustomAction(t, functionName, payload, awsRegion, identity)
+	return triggerLambdaFunctionWithCustomAction(t, functionName, payload, "RequestResponse", awsRegion, identity)
 }
 
-func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, awsRegion string) ([]byte, error) {
+func triggerLambdaFunctionAsync(t *testing.T, functionName string, payload []byte, awsRegion string) string {
+	identity := func(str string) (string, error) { return str, nil }
+	return triggerLambdaFunctionWithCustomAction(t, functionName, payload, "Event", awsRegion, identity)
+}
+
+func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, invocationType string, awsRegion string) ([]byte, error) {
 	logger.Logf(t, "Invoking lambda function %s", functionName)
 
 	sess, err := terraws.NewAuthenticatedSession(awsRegion)
@@ -83,6 +88,7 @@ func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, a
 	input := lambda.InvokeInput{
 		FunctionName: aws.String(functionName),
 		Payload: payload,
+		InvocationType: aws.String(invocationType),
 	}
 
 	output, err := lambdaClient.Invoke(&input)

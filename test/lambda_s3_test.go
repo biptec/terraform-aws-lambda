@@ -20,6 +20,7 @@ func LambdaS3Test(t *testing.T, reservedConcurrentExecutions *int) {
 
 	terraformDir := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/lambda-s3")
 	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, terraformDir)
+	invocationType := "RequestResponse"
 	defer terraform.Destroy(t, terraformOptions)
 
 	if reservedConcurrentExecutions != nil {
@@ -30,7 +31,7 @@ func LambdaS3Test(t *testing.T, reservedConcurrentExecutions *int) {
 	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
 	requestPayload := createEventObjectPayloadForLambdaFunction(t, terraformOptions, awsRegion)
 
-	actualBase64Data := triggerLambdaFunctionWithCustomAction(t, functionName, requestPayload, awsRegion, func(responsePayload string) (string, error) {
+	actualBase64Data := triggerLambdaFunctionWithCustomAction(t, functionName, requestPayload, invocationType, awsRegion, func(responsePayload string) (string, error) {
 		return getBase64ImageDataFromResponsePayloadE(t, []byte(responsePayload))
 	})
 

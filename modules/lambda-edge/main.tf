@@ -46,11 +46,15 @@ resource "aws_lambda_function" "function" {
   role = aws_iam_role.lambda.arn
 
   tags = var.tags
-  # Due to a bug in Terraform, this is currently disabled: https://github.com/hashicorp/terraform/issues/14961
-  #
-  # dead_letter_config {
-  #   target_arn = "${var.dead_letter_target_arn}"
-  # }
+
+  # Terraform will error if target_arn for dead_letter_config is just nil.
+  # Workaround is to dynamically generic this block if the string length for dead_letter_target_arn is not 0.
+  dynamic "dead_letter_config" {
+    for_each = var.dead_letter_target_arn == null ? [] : [1]
+    content {
+      target_arn = var.dead_letter_target_arn
+    }
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
