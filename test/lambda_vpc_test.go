@@ -1,9 +1,9 @@
 package test
 
 import (
-	"testing"
-	"log"
 	"encoding/json"
+	"log"
+	"testing"
 )
 
 // TODO: There is a Terraform bug that causes `terraform destroy` to fail for lambda functions in VPCs. As a result,
