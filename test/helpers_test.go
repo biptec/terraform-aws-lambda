@@ -1,17 +1,17 @@
 package test
 
 import (
-	"testing"
 	"fmt"
-	"io/ioutil"
-	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/aws/aws-sdk-go/service/lambda"
 	terraws "github.com/gruntwork-io/terratest/modules/aws"
-	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/logger"
-	"time"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"io/ioutil"
+	"testing"
+	"time"
 )
 
 var regionsWithoutLambda = []string{
@@ -30,7 +30,7 @@ func createBaseTerraformOptions(t *testing.T, templatePath string) (*terraform.O
 		TerraformDir: templatePath,
 		Vars: map[string]interface{}{
 			"aws_region": awsRegion,
-			"name": fmt.Sprintf("%s-%s", t.Name(), uniqueId),
+			"name":       fmt.Sprintf("%s-%s", t.Name(), uniqueId),
 		},
 		RetryableTerraformErrors: map[string]string{
 			"the KMS key is invalid for CreateGrant": "https://github.com/terraform-providers/terraform-provider-aws/issues/4633",
@@ -86,8 +86,8 @@ func triggerLambdaFunctionE(t *testing.T, functionName string, payload []byte, i
 	lambdaClient := lambda.New(sess)
 
 	input := lambda.InvokeInput{
-		FunctionName: aws.String(functionName),
-		Payload: payload,
+		FunctionName:   aws.String(functionName),
+		Payload:        payload,
 		InvocationType: aws.String(invocationType),
 	}
 
