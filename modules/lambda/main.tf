@@ -32,7 +32,7 @@ resource "aws_lambda_function" "function" {
 
   # When source_path is set, it indicates that the function should come from the local file path.
   filename         = var.source_path != null ? local.zip_file_path : null
-  source_code_hash = var.source_path != null ? local.source_code_hash : null
+  source_code_hash = var.source_path != null ? local.source_code_hash : var.source_code_hash
 
   # When source_path is not set (null), it indicates that the function should come from S3.
   s3_bucket         = var.source_path == null ? var.s3_bucket : null
