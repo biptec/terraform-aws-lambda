@@ -121,6 +121,16 @@ resource "aws_security_group" "lambda" {
   tags = var.tags
 }
 
+resource "aws_security_group_rule" "outbound" {
+  count             = var.should_create_outbound_rule ? 1 : 0
+  type              = "egress"
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "all"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.lambda[0].id
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE AN IAM ROLE FOR THE LAMBDA FUNCTION
 # This controls what resources the lambda function can access and who can trigger the lambda job. We export the id of
