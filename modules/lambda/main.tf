@@ -121,12 +121,12 @@ resource "aws_security_group" "lambda" {
   tags = var.tags
 }
 
-resource "aws_security_group_rule" "outbound" {
+resource "aws_security_group_rule" "allow_outbound_all" {
   count             = var.should_create_outbound_rule ? 1 : 0
   type              = "egress"
   from_port         = 0
-  to_port           = 65535
-  protocol          = "all"
+  to_port           = 0
+  protocol          = "-1"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.lambda[0].id
 }
