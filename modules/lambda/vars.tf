@@ -156,3 +156,9 @@ variable "reserved_concurrent_executions" {
   type        = number
   default     = null
 }
+
+variable "should_create_outbound_rule" {
+  description = "If true, create an egress rule allowing all outbound traffic from Lambda function to the entire Internet (e.g. 0.0.0.0/0)."
+  type        = bool
+  default     = false
+}
