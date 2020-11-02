@@ -95,8 +95,8 @@ module "vpc" {
 module "efs" {
   source = "git::git@github.com:gruntwork-io/module-data-storage.git//modules/efs?ref=v0.16.2"
 
-  name = var.efs_name
-  vpc_id = module.vpc.vpc_id
+  name       = var.name
+  vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.public_subnet_ids
 
   efs_access_points = {
