@@ -51,9 +51,10 @@ module "lambda_function" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_app_subnet_ids
 
+  # lambda only supports one EFS / access point mount
   mount_to_file_system         = true
   file_system_mount_path       = var.efs_mount_path
-  file_system_access_point_arn = data.aws_efs_access_point.lambda_access.arn # lambda only supports one EFS mount
+  file_system_access_point_arn = "arn:aws:elasticfilesystem:${var.aws_region}:${data.aws_caller_identity.current.account_id}:access-point/${module.efs.access_point_ids[local.fs_path]}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -118,8 +119,6 @@ module "efs" {
   }
 }
 
-data "aws_efs_access_point" "lambda_access" {
-  access_point_id = module.efs.access_point_ids[local.fs_path]
-}
+data "aws_caller_identity" "current" {}
 
 data "aws_availability_zones" "all" {}
