@@ -122,6 +122,24 @@ variable "subnet_ids" {
   default     = []
 }
 
+variable "mount_to_file_system" {
+  description = "Set to true to mount your Lambda function on an EFS. Note that the lambda must also be deployed inside a VPC (run_in_vpc must be set to true) for this config to have any effect."
+  type        = bool
+  default     = false
+}
+
+variable "file_system_access_point_arn" {
+  description = "The ARN of an EFS access point to use to access the file system. Only used if var.mount_to_file_system is true."
+  type        = string
+  default     = null
+}
+
+variable "file_system_mount_path" {
+  description = "The mount path where the lambda can access the file system. This path must begin with /mnt/. Only used if var.mount_to_file_system is true."
+  type        = string
+  default     = null
+}
+
 variable "skip_zip" {
   description = "Set to true to skip zip archive creation and assume that var.source_path points to a pregenerated zip archive."
   type        = bool

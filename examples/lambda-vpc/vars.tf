@@ -20,3 +20,9 @@ variable "vpc_name" {
   type        = string
   default     = "lambda-vpc-example"
 }
+
+variable "efs_mount_path" {
+  description = "The path at which to mount the EFS. Must begin with /mnt/."
+  type        = string
+  default     = "/mnt/test"
+}

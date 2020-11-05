@@ -23,6 +23,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+locals {
+  fs_path = "jenkins"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE LAMBDA FUNCTION
 # ---------------------------------------------------------------------------------------------------------------------
@@ -46,6 +50,11 @@ module "lambda_function" {
   run_in_vpc = true
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_app_subnet_ids
+
+  # lambda only supports one EFS / access point mount
+  mount_to_file_system         = true
+  file_system_mount_path       = var.efs_mount_path
+  file_system_access_point_arn = "arn:aws:elasticfilesystem:${var.aws_region}:${data.aws_caller_identity.current.account_id}:access-point/${module.efs.access_point_ids[local.fs_path]}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -77,5 +86,39 @@ module "vpc" {
   num_nat_gateways       = 1
   num_availability_zones = length(data.aws_availability_zones.all.names)
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE AN EFS + ACCESS POINT
+# We will give the Lambda function access to this EFS. Note that in order for a Lambda function to mount to an EFS,
+# it must be deployed inside a VPC, as we have done above.
+# ---------------------------------------------------------------------------------------------------------------------
+
+module "efs" {
+  source = "git::git@github.com:gruntwork-io/module-data-storage.git//modules/efs?ref=v0.16.2"
+
+  name       = var.name
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.public_subnet_ids
+
+  efs_access_points = {
+    jenkins = {
+      read_write_access_arns = []
+      read_only_access_arns  = []
+      posix_user = {
+        uid            = 1000
+        gid            = 1000
+        secondary_gids = []
+      },
+      root_directory = {
+        path        = "/${local.fs_path}"
+        owner_uid   = 1000
+        owner_gid   = 1000
+        permissions = 755
+      }
+    }
+  }
+}
+
+data "aws_caller_identity" "current" {}
 
 data "aws_availability_zones" "all" {}

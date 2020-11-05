@@ -74,6 +74,15 @@ resource "aws_lambda_function" "function" {
       target_arn = var.dead_letter_target_arn
     }
   }
+
+  # In order to mount a file system, the lambda must also be deployed inside a VPC.
+  dynamic "file_system_config" {
+    for_each = var.run_in_vpc && var.mount_to_file_system ? ["mount_file_system"] : []
+    content {
+      arn              = var.file_system_access_point_arn
+      local_mount_path = var.file_system_mount_path
+    }
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
