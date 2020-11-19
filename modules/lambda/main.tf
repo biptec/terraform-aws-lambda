@@ -162,7 +162,7 @@ data "aws_iam_policy_document" "lambda_role" {
 
     principals {
       type        = "Service"
-      identifiers = ["lambda.amazonaws.com"]
+      identifiers = var.assume_role_policy_services
     }
   }
 }
