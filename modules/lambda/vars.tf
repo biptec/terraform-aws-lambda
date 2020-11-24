@@ -158,6 +158,12 @@ variable "lambda_role_permissions_boundary_arn" {
   default     = null
 }
 
+variable "assume_role_policy" {
+  description = "A custom assume role policy for the IAM role for this Lambda function. If not set, the default is a policy that allows the Lambda service to assume the IAM role, which is what most users will need. However, you can use this variable to override the policy for special cases, such as using a Lambda function to rotate AWS Secrets Manager secrets."
+  type        = string
+  default     = null
+}
+
 variable "dead_letter_target_arn" {
   description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
   default     = null

@@ -149,7 +149,7 @@ resource "aws_security_group_rule" "allow_outbound_all" {
 resource "aws_iam_role" "lambda" {
   count                = var.create_resources ? 1 : 0
   name                 = var.name
-  assume_role_policy   = data.aws_iam_policy_document.lambda_role.json
+  assume_role_policy   = var.assume_role_policy == null ? data.aws_iam_policy_document.lambda_role.json : var.assume_role_policy
   permissions_boundary = var.lambda_role_permissions_boundary_arn
 
   tags = var.tags
