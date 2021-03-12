@@ -3,15 +3,10 @@
 # This module takes your code and uploads it to AWS so it can run as an AWS Lambda function.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# ----------------------------------------------------------------------------------------------------------------------
-# REQUIRE A SPECIFIC TERRAFORM VERSION OR HIGHER
-# This module has been updated with 0.12 syntax, which means it is no longer compatible with any versions below 0.12.
-# ----------------------------------------------------------------------------------------------------------------------
-
 terraform {
-  # This module is now only being tested with Terraform 0.13.x. However, to make upgrading easier, we are setting
+  # This module is now only being tested with Terraform 0.14.x. However, to make upgrading easier, we are setting
   # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
-  # forwards compatible with 0.13.x code.
+  # forwards compatible with 0.14.x code.
   required_version = ">= 0.12.26"
 }
 
@@ -91,7 +86,7 @@ resource "aws_lambda_function" "function" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "archive_file" "source_code" {
-  count       = var.create_resources && (! var.skip_zip) && var.source_path != null ? 1 : 0
+  count       = var.create_resources && (!var.skip_zip) && var.source_path != null ? 1 : 0
   type        = "zip"
   source_dir  = var.source_path
   output_path = var.zip_output_path == null ? "${path.module}/${var.name}_lambda.zip" : var.zip_output_path
