@@ -29,7 +29,7 @@ locals {
 module "lambda_function" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
+  # source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
   source = "../../modules/lambda"
 
   name        = var.name
@@ -72,7 +72,7 @@ resource "aws_security_group_rule" "allow_all_outbound" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "vpc" {
-  source = "git::git@github.com:gruntwork-io/module-vpc.git//modules/vpc-app?ref=v0.6.0"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-vpc.git//modules/vpc-app?ref=v0.6.0"
 
   vpc_name   = var.vpc_name
   aws_region = var.aws_region
@@ -89,7 +89,7 @@ module "vpc" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "efs" {
-  source = "git::git@github.com:gruntwork-io/module-data-storage.git//modules/efs?ref=v0.16.2"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-data-storage.git//modules/efs?ref=v0.16.2"
 
   name       = var.name
   vpc_id     = module.vpc.vpc_id

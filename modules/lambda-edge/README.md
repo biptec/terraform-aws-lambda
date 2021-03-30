@@ -58,7 +58,7 @@ exported as the output `function_arn`, so you can add custom rules using the `aw
 
 ```hcl
 module "my_lambda_function" {
-  source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda-edge?ref=v1.0.8"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda-edge?ref=v1.0.8"
   # (params omitted)
 }
 

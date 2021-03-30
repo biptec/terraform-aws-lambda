@@ -49,7 +49,7 @@ exported as the output `function_arn`, so you can add custom rules using the `aw
 
 ```hcl
 module "my_lambda_function" {
-  source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
   # (params omitted)
 }
 
@@ -79,7 +79,7 @@ Here's an example:
  
 ```hcl
 module "my_lambda_function" {
-  source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
   
   run_in_vpc = true
   vpc_id = "${data.terraform_remote_state.vpc.id}"
@@ -96,7 +96,7 @@ output variable `security_group_id`):
 
 ```hcl
 module "my_lambda_function" {
-  source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v1.0.8"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
   
   run_in_vpc = true
   vpc_id = "${data.terraform_remote_state.vpc.id}"
@@ -147,5 +147,5 @@ If you want to have a central S3 bucket that you use as a repository for your La
     }
     ```
     `s3:GetObjectVersion` is only required if you want to use `s3 object versioning` when deploying `lambdas`. You also need to enable `bucket versioning` in such case.
-1. If you want to enable `encryption` for `S3 objects` you must use a customer master key, or CMK (see the [kms-master-key](https://github.com/gruntwork-io/module-security/tree/master/modules/kms-master-key) module) rather than the default key, and ensure that both the `shared-services` account and all the other accounts (`dev`, `stage`, `prod`) have access to that CMK.
+1. If you want to enable `encryption` for `S3 objects` you must use a customer master key, or CMK (see the [kms-master-key](https://github.com/gruntwork-io/terraform-aws-security/tree/master/modules/kms-master-key) module) rather than the default key, and ensure that both the `shared-services` account and all the other accounts (`dev`, `stage`, `prod`) have access to that CMK.
 1. The IAM User or IAM Role which will be running `terraform apply` for the other accounts (`dev`, `stage`, `prod`) must also be explicitly granted access to the S3 bucket in (1) and the CMK in (2).

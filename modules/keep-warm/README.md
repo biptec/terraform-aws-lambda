@@ -27,7 +27,7 @@ The basic idea is to:
 
     ```hcl
     module "lambda_example" {
-      source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/lambda?ref=v0.2.2"
+      source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v0.2.2"
 
       name = "lambda-example"
 
@@ -42,7 +42,7 @@ The basic idea is to:
 
     ```hcl
     module "keep_warm" {
-      source = "git::git@github.com:gruntwork-io/package-lambda.git//modules/keep-warm?ref=v0.2.2"
+      source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/keep-warm?ref=v0.2.2"
 
       name = "keep-warm"
 

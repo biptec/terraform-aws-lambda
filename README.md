@@ -45,7 +45,7 @@ For example, to use `v1.0.8` of the standalone-server module, you would add the 
 
 ```hcl
 module "ecs_cluster" {
-  source = "git::git@github.com:gruntwork-io/module-server.git//modules/standalone-server?ref=v1.0.8"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-server.git//modules/standalone-server?ref=v1.0.8"
 
   // set the parameters for the standalone-server module
 }
@@ -63,11 +63,11 @@ pull the latest version of this module from this repo before running the standar
 
 You can install the scripts and binaries in the `modules` folder of any repo using the [Gruntwork
 Installer](https://github.com/gruntwork-io/gruntwork-installer). For example, if the scripts you want to install are
-in the `modules/ecs-scripts` folder of the https://github.com/gruntwork-io/module-ecs repo, you could install them
+in the `modules/ecs-scripts` folder of the https://github.com/gruntwork-io/terraform-aws-ecs repo, you could install them
 as follows:
 
 ```bash
-gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/module-ecs" --tag "0.0.1"
+gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/terraform-aws-ecs" --tag "0.0.1"
 ```
 
 See the docs for each script & binary for detailed instructions on how to use them.
