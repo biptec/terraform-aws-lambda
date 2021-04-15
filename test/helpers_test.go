@@ -19,7 +19,14 @@ var regionsWithoutLambda = []string{
 	"sa-east-1",
 	"ap-southeast-1",
 	"ap-south-1",
-	"ca-central-1", // Has lambda, but is incredibly slow, so tests often time out
+
+	// Has lambda, but is incredibly slow, so tests often time out
+	"ca-central-1",
+
+	// Has lambda, but due to a Terraform bug, leads to a "code signing config AccessDeniedException" error
+	// https://github.com/hashicorp/terraform-provider-aws/issues/16755
+	// https://github.com/hashicorp/terraform-provider-aws/issues/18328
+	"ap-northeast-3",
 }
 
 func createBaseTerraformOptions(t *testing.T, templatePath string) (*terraform.Options, string, string) {
