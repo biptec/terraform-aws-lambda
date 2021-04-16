@@ -25,21 +25,27 @@ resource "aws_lambda_function" "function" {
   description   = var.description
   publish       = var.enable_versioning
 
-  # When source_path is set, it indicates that the function should come from the local file path.
-  filename         = var.source_path != null ? local.zip_file_path : null
-  source_code_hash = var.source_path != null ? local.source_code_hash : var.source_code_hash
+  # When source_path is set and image_uri is not set, it indicates that the function should come from the local file path.
+  filename         = local.use_local_file ? local.zip_file_path : null
+  source_code_hash = local.use_local_file ? local.source_code_hash : null
 
-  # When source_path is not set (null), it indicates that the function should come from S3.
-  s3_bucket         = var.source_path == null ? var.s3_bucket : null
-  s3_key            = var.source_path == null ? var.s3_key : null
-  s3_object_version = var.source_path == null ? var.s3_object_version : null
+  # When source_path and image_uri are not set (null), it indicates that the function should come from S3.
+  s3_bucket         = var.s3_bucket
+  s3_key            = local.use_s3_bucket ? var.s3_key : null
+  s3_object_version = local.use_s3_bucket ? var.s3_object_version : null
 
-  runtime     = var.runtime
-  handler     = var.handler
-  layers      = var.layers
-  timeout     = var.timeout
-  memory_size = var.memory_size
-  kms_key_arn = var.kms_key_arn
+  # When image_uri is set, it indicates that the function should come from ECR.
+  image_uri = var.image_uri
+
+  # When image_uri is specified, runtime, handler and layers should be empty.
+  package_type = local.use_docker_image ? "Image" : "Zip"
+  runtime      = local.use_docker_image ? null : var.runtime
+  handler      = local.use_docker_image ? null : var.handler
+  layers       = local.use_docker_image ? [] : var.layers
+  timeout      = var.timeout
+  memory_size  = var.memory_size
+  kms_key_arn  = var.kms_key_arn
+
 
   reserved_concurrent_executions = var.reserved_concurrent_executions
 
@@ -78,6 +84,28 @@ resource "aws_lambda_function" "function" {
       local_mount_path = var.file_system_mount_path
     }
   }
+
+  # The Lambda OCI image configurations.
+  dynamic "image_config" {
+    for_each = local.use_docker_image ? ["once"] : []
+    content {
+      entry_point       = var.entry_point
+      command           = var.command
+      working_directory = var.working_directory
+    }
+  }
+}
+
+# Check that only one of the resources (s3, local ip, docker image) is specified.
+resource "null_resource" "assert_exactly_one_of" {
+  count = length(compact([var.image_uri, var.source_path, var.s3_bucket])) == 1 ? 0 : "ERROR: exactly one of image_uri, source_path, or s3_bucket must be specified."
+}
+
+# Local variables which specify which deployment method is used.
+locals {
+  use_local_file   = var.source_path != null && var.s3_bucket == null && var.image_uri == null
+  use_s3_bucket    = var.source_path == null && var.s3_bucket != null && var.image_uri == null
+  use_docker_image = var.source_path == null && var.s3_bucket == null && var.image_uri != null
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
