@@ -7,14 +7,14 @@ env: &env
     GRUNTWORK_INSTALLER_VERSION: v0.0.30
     TERRATEST_LOG_PARSER_VERSION: v0.30.12
     MODULE_CI_VERSION: v0.29.1
-    TERRAFORM_VERSION: 0.14.4
+    TERRAFORM_VERSION: 0.15.0
     TERRAGRUNT_VERSION: NONE
     PACKER_VERSION: NONE
     GOLANG_VERSION: 1.13.8
 version: 2.0
 jobs:
   precommit:
-    !!merge <<: *env
+    <<: *env
     docker:
       - image: circleci/python:3.8.1
     steps:
@@ -37,8 +37,8 @@ jobs:
             pre-commit install
             pre-commit run --all-files
   test aws:
-    !!merge <<: *defaults
-    !!merge <<: *env
+    <<: *defaults
+    <<: *env
     steps:
       - checkout
       - run: &install_gruntwork_tooling
