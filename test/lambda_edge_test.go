@@ -3,9 +3,10 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestLambdaEdge(t *testing.T) {

@@ -3,6 +3,8 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	terraws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -10,7 +12,6 @@ import (
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestLambdaDLQ(t *testing.T) {

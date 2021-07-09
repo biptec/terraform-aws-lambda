@@ -2,6 +2,10 @@ package test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"testing"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/lambda"
 	terraws "github.com/gruntwork-io/terratest/modules/aws"
@@ -9,9 +13,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"io/ioutil"
-	"testing"
-	"time"
 )
 
 var regionsWithoutLambda = []string{

@@ -4,11 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestLambdaS3(t *testing.T) {

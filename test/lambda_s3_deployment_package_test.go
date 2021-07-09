@@ -3,10 +3,11 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gruntwork-io/terratest/modules/logger"
-	"github.com/gruntwork-io/terratest/modules/terraform"
 	"reflect"
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 func TestLambdaS3DeploymentPackage(t *testing.T) {
