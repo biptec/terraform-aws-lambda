@@ -1,0 +1,8 @@
+{
+  "name": "sample-app-aws-serverless",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.16.1",
+    "@vendia/serverless-express": "^4.3.9"
+  }
+}

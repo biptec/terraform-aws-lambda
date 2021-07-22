@@ -17,7 +17,14 @@ func TestValidateAllTerraformModulesAndExamples(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 
-	opts, optsErr := terraform.NewValidationOptions(filepath.Join(cwd, "../.."), []string{}, []string{})
+	opts, optsErr := terraform.NewValidationOptions(
+		filepath.Join(cwd, "../.."),
+		[]string{},
+		// Exclude api-gateway-proxy module for now, since our usage of provider aliases with configuration_aliases
+		// breaks terraform validate.
+		// See https://github.com/hashicorp/terraform/issues/28490 for more info.
+		[]string{"modules/api-gateway-proxy"},
+	)
 	require.NoError(t, optsErr)
 
 	terraform.ValidateAllTerraformModules(t, opts)

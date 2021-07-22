@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,35 +16,54 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
-var regionsWithoutLambda = []string{
-	"us-west-1",
-	"sa-east-1",
-	"ap-southeast-1",
-	"ap-south-1",
+const (
+	maxTerraformRetries          = 3
+	sleepBetweenTerraformRetries = 5 * time.Second
+)
 
-	// Has lambda, but is incredibly slow, so tests often time out
-	"ca-central-1",
+var (
+	// Set up terratest to retry on known failures
+	retryableTerraformErrors = map[string]string{
+		// `terraform init` frequently fails in CI due to network issues accessing plugins. The reason is unknown, but
+		// eventually these succeed after a few retries.
+		".*unable to verify signature.*":             "Failed to retrieve plugin due to transient network error.",
+		".*unable to verify checksum.*":              "Failed to retrieve plugin due to transient network error.",
+		".*no provider exists with the given name.*": "Failed to retrieve plugin due to transient network error.",
+		".*registry service is unreachable.*":        "Failed to retrieve plugin due to transient network error.",
 
-	// Has lambda, but due to a Terraform bug, leads to a "code signing config AccessDeniedException" error
-	// https://github.com/hashicorp/terraform-provider-aws/issues/16755
-	// https://github.com/hashicorp/terraform-provider-aws/issues/18328
-	"ap-northeast-3",
-}
+		"the KMS key is invalid for CreateGrant": "https://github.com/terraform-providers/terraform-provider-aws/issues/4633",
+	}
+
+	regionsWithoutLambda = []string{
+		"us-west-1",
+		"sa-east-1",
+		"ap-southeast-1",
+		"ap-south-1",
+
+		// Has lambda, but is incredibly slow, so tests often time out
+		"ca-central-1",
+
+		// Has lambda, but due to a Terraform bug, leads to a "code signing config AccessDeniedException" error
+		// https://github.com/hashicorp/terraform-provider-aws/issues/16755
+		// https://github.com/hashicorp/terraform-provider-aws/issues/18328
+		"ap-northeast-3",
+	}
+)
 
 func createBaseTerraformOptions(t *testing.T, templatePath string) (*terraform.Options, string, string) {
 	awsRegion := terraws.GetRandomRegion(t, nil, regionsWithoutLambda)
 	uniqueId := random.UniqueId()
+	testName := strings.Replace(t.Name(), "/", "-", -1)
 
 	terraformOptions := terraform.Options{
 		TerraformDir: templatePath,
 		Vars: map[string]interface{}{
 			"aws_region": awsRegion,
-			"name":       fmt.Sprintf("%s-%s", t.Name(), uniqueId),
+			"name":       fmt.Sprintf("%s-%s", testName, uniqueId),
 		},
-		RetryableTerraformErrors: map[string]string{
-			"the KMS key is invalid for CreateGrant": "https://github.com/terraform-providers/terraform-provider-aws/issues/4633",
-		},
-		MaxRetries: 3,
+		RetryableTerraformErrors: retryableTerraformErrors,
+		MaxRetries:               maxTerraformRetries,
+		TimeBetweenRetries:       sleepBetweenTerraformRetries,
 	}
 
 	return &terraformOptions, awsRegion, uniqueId

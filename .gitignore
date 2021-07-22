@@ -23,6 +23,7 @@ vendor
 
 # Output from lambda job test
 *.zip
+node_modules
 
 # Used for tmp storage by Terratest
 .test-data
