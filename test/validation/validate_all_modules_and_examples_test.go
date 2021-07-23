@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ func TestValidateAllTerraformModulesAndExamples(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 
-	opts, optsErr := terraform.NewValidationOptions(
+	opts, optsErr := test_structure.NewValidationOptions(
 		filepath.Join(cwd, "../.."),
 		[]string{},
 		// Exclude api-gateway-proxy module for now, since our usage of provider aliases with configuration_aliases
@@ -27,5 +27,5 @@ func TestValidateAllTerraformModulesAndExamples(t *testing.T) {
 	)
 	require.NoError(t, optsErr)
 
-	terraform.ValidateAllTerraformModules(t, opts)
+	test_structure.ValidateAllTerraformModules(t, opts)
 }
