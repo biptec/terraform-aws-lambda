@@ -67,15 +67,10 @@ data "archive_file" "source_code" {
   output_path = var.zip_output_path == null ? "${path.module}/${var.name}_lambda.zip" : var.zip_output_path
 }
 
-data "template_file" "hash_from_source_code_zip" {
-  count    = var.skip_zip ? 1 : 0
-  template = filebase64sha256(var.source_path)
-}
-
 locals {
   source_code_hash = (
     var.skip_zip
-    ? join(",", data.template_file.hash_from_source_code_zip.*.rendered)
+    ? filebase64sha256(var.source_path)
     : join(",", data.archive_file.source_code.*.output_base64sha256)
   )
 
