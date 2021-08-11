@@ -30,11 +30,11 @@ output "version" {
 }
 
 output "iam_role_id" {
-  value = join("", aws_iam_role.lambda.*.id)
+  value = local.role_id
 }
 
 output "iam_role_arn" {
-  value = join("", aws_iam_role.lambda.*.arn)
+  value = local.role_arn
 }
 
 // Will only show up if var.run_in_vpc is true

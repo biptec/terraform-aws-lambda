@@ -160,6 +160,12 @@ variable "assume_role_policy" {
   default     = null
 }
 
+variable "existing_role_arn" {
+  description = "The ARN of existing IAM role that will be used for the Lambda function. If set, the module will not create any IAM entities and fully relies on caller to provide correct IAM role and its policies. Using the variable allows the module to leverage an existing IAM role - for example, when an account has centralized set of IAM entities, or when deploying same function across multiple AWS region to avoid the module attempting to create duplicate IAM entities."
+  type        = string
+  default     = null
+}
+
 variable "dead_letter_target_arn" {
   description = "The ARN of an SNS topic or an SQS queue to notify when invocation of a Lambda function fails. If this option is used, you must grant this function's IAM role (the ID is outputted as iam_role_id) access to write to the target object, which means allowing either the sns:Publish or sqs:SendMessage action on this ARN, depending on which service is targeted."
   default     = null

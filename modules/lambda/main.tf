@@ -10,15 +10,29 @@ terraform {
   required_version = ">= 0.12.26"
 }
 
+# The datasource will actually be used only when referencing an existing IAM entity, otherwise we provide a dummy input
+# since `arn` attribute is required, and to avoid using `count`, which might have side effects
+data "aws_arn" "role" {
+  arn = local.create_iam_entities ? "arn:aws:iam::123456789012:dummy" : var.existing_role_arn
+}
+
+locals {
+  create_iam_entities = var.existing_role_arn == null
+  role_arn            = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].arn : var.existing_role_arn
+  # The `aws_arn` datasource returns full resource name, which will have the `role/` prefix in case of IAM role - strip
+  # it away, to make compatible with `aws_iam_role.id` attribute
+  existing_role_id = trimprefix(data.aws_arn.role.resource, "role/")
+  role_id          = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : local.existing_role_id
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE LAMBDA FUNCTION
 # ---------------------------------------------------------------------------------------------------------------------
-
 resource "aws_lambda_function" "function" {
   count = var.create_resources ? 1 : 0
 
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
-  # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC
+  # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC.
   depends_on = [aws_iam_role_policy.network_interfaces_for_lamda]
 
   function_name = var.name
@@ -49,7 +63,7 @@ resource "aws_lambda_function" "function" {
 
   reserved_concurrent_executions = var.reserved_concurrent_executions
 
-  role = var.create_resources ? aws_iam_role.lambda[0].arn : null
+  role = var.create_resources ? local.role_arn : null
 
   tags = var.tags
 
@@ -162,10 +176,11 @@ resource "aws_security_group_rule" "allow_outbound_all" {
 # CREATE AN IAM ROLE FOR THE LAMBDA FUNCTION
 # This controls what resources the lambda function can access and who can trigger the lambda job. We export the id of
 # the IAM role so users can add custom permissions.
+# Creating IAM entities is optional and will be skipped if `existing_role_arn` variable is set.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "lambda" {
-  count                = var.create_resources ? 1 : 0
+  count                = var.create_resources && local.create_iam_entities ? 1 : 0
   name                 = var.name
   assume_role_policy   = var.assume_role_policy == null ? data.aws_iam_policy_document.lambda_role.json : var.assume_role_policy
   permissions_boundary = var.lambda_role_permissions_boundary_arn
@@ -190,9 +205,9 @@ data "aws_iam_policy_document" "lambda_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "logging_for_lambda" {
-  count  = var.create_resources ? 1 : 0
+  count  = var.create_resources && local.create_iam_entities ? 1 : 0
   name   = "${var.name}-logging"
-  role   = var.create_resources ? aws_iam_role.lambda[0].id : null
+  role   = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : null
   policy = data.aws_iam_policy_document.logging_for_lambda.json
 }
 
@@ -216,10 +231,10 @@ data "aws_iam_policy_document" "logging_for_lambda" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "network_interfaces_for_lamda" {
-  count = var.create_resources && var.run_in_vpc ? 1 : 0
+  count = var.create_resources && local.create_iam_entities && var.run_in_vpc ? 1 : 0
 
   name   = "${var.name}-network-interfaces"
-  role   = var.create_resources ? aws_iam_role.lambda[0].id : 0
+  role   = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : null
   policy = data.aws_iam_policy_document.network_interfaces_for_lamda.json
 }
 
