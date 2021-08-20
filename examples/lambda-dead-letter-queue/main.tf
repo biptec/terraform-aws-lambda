@@ -23,7 +23,7 @@ provider "aws" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "sqs" {
-  source = "git::git@github.com:gruntwork-io/terraform-aws-messaging.git//modules/sqs?ref=v0.3.2"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-messaging.git//modules/sqs?ref=v0.7.2"
 
   name = var.name
 
