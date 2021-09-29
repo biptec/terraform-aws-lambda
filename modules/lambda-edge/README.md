@@ -10,7 +10,9 @@ for the full details):
 * The execution timeout must not be higher than 30 seconds.
 * The function must be versioned in order to be a target for Cloudfront events.
 * The function must be deployed in the `us-east-1` region.
-* The function runtime must be `nodejs10.x` or `python3.7`.
+* The function runtime must be one of:
+    - `nodejs10.x` or newer
+    - `python3.7` or newer
 
 
 
