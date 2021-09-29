@@ -79,6 +79,10 @@ resource "aws_lambda_permission" "with_sns" {
 This module deploys the Lambda function but doesn't create any CloudFront trigger. There are two ways to create those
 triggers:
 
-1. Using terraform (but support for this is currently not available in the CloudFront module).
+1. Using terraform. To link the Lambda@Edge function to the [s3-cloudfront module from
+   terraform-aws-static-assets](https://github.com/gruntwork-io/terraform-aws-static-assets/tree/master/modules/s3-cloudfront),
+   you can use the
+   [default_lambda_associations](https://github.com/gruntwork-io/terraform-aws-static-assets/blob/master/modules/s3-cloudfront/vars.tf#L308)
+   input variable.
 2. Manually from the AWS Console as described in the
    [Lambda@Edge documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html#lambda-edge-add-triggers)

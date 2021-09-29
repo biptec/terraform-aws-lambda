@@ -19,11 +19,6 @@ terraform {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE THE LAMBDA FUNCTION
-# There are TWO functions below, although only one will actually be created. This is because we have an optional
-# feature--whether to find the deployment package in an S3 bucket or the local file
-# system--that are controlled via inline blocks, and there is no way to make inline blocks conditional in Terraform.
-# Therefore, to handle the 2 possible permutations, we copy/paste the same exact settings, other than these inline
-# blocks. Make sure to update all 2 permutations any time you make a change!!
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "function" {
