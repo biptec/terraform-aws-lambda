@@ -34,7 +34,7 @@ module "lambda_s3" {
   # Notice how the source_path is set to python/build, which doesn't initially exist. That's because you need to run
   # the build process for the code before deploying it with Terraform. See README.md for instructions.
   source_path = "${path.module}/python/build"
-  runtime     = "python2.7"
+  runtime     = "python3.9"
 
   # The Lambda zip file will be extracted into /var/task. Our zip contains two folders: a src folder with our Lambda
   # code, including the handler, and a dependencies folder that has our dependencies. Below, we tell the Lambda

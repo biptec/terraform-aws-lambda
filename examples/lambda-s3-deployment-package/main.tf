@@ -34,7 +34,7 @@ module "lambda_s3" {
   s3_bucket = aws_s3_bucket.source_code.bucket
   s3_key    = aws_s3_bucket_object.deployment_package.key
 
-  runtime = "python2.7"
+  runtime = "python3.9"
   handler = "index.handler"
 
   timeout     = 30

@@ -32,7 +32,7 @@ module "lambda_s3" {
   description = "An example of how to process images in S3 with Lambda"
 
   source_path = "${path.module}/python"
-  runtime     = "python2.7"
+  runtime     = "python3.9"
   handler     = "index.handler"
 
   timeout     = 30
