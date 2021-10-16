@@ -33,7 +33,7 @@ resource "aws_lambda_function" "function" {
 
   # We need this policy to be created before we try to create the lambda job, or you get an error about not having
   # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC.
-  depends_on = [aws_iam_role_policy.network_interfaces_for_lamda]
+  depends_on = [aws_iam_role_policy.network_interfaces_for_lambda]
 
   function_name = var.name
   description   = var.description
@@ -230,15 +230,15 @@ data "aws_iam_policy_document" "logging_for_lambda" {
 # These resources are only created if var.run_in_vpc is true.
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_iam_role_policy" "network_interfaces_for_lamda" {
+resource "aws_iam_role_policy" "network_interfaces_for_lambda" {
   count = var.create_resources && local.create_iam_entities && var.run_in_vpc ? 1 : 0
 
   name   = "${var.name}-network-interfaces"
   role   = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : null
-  policy = data.aws_iam_policy_document.network_interfaces_for_lamda.json
+  policy = data.aws_iam_policy_document.network_interfaces_for_lambda.json
 }
 
-data "aws_iam_policy_document" "network_interfaces_for_lamda" {
+data "aws_iam_policy_document" "network_interfaces_for_lambda" {
   statement {
     effect = "Allow"
 
