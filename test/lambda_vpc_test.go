@@ -1,54 +1,36 @@
 package test
 
 import (
-	"encoding/json"
-	"log"
+	"fmt"
+	"strings"
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
-// TODO: There is a Terraform bug that causes `terraform destroy` to fail for lambda functions in VPCs. As a result,
-// we have to disable this test: https://github.com/hashicorp/terraform/issues/10272
-//
-//func TestLambdaVpc(t *testing.T) {
-//	t.Parallel()
-//
-//	testName := "TestLambdaVpc"
-//	logger := terralog.NewLogger(testName)
-//
-//	resourceCollection := createBaseRandomResourceCollection(t)
-//	terratestOptions := createBaseTerraformOptions(testName, "../examples/lambda-vpc", resourceCollection)
-//	defer terratest.Destroy(terratestOptions, resourceCollection)
-//
-//	terratestOptions.Vars["vpc_name"] = fmt.Sprintf("lambda-vpc-example-%s", resourceCollection.UniqueId)
-//
-//	if _, err := terratest.Apply(terratestOptions); err != nil {
-//		t.Fatalf("Failed to apply templates in %s due to error: %s\n", terratestOptions.TemplatePath, err.Error())
-//	}
-//
-//	functionName := getRequiredOutput(t, "function_name", terratestOptions)
-//
-//	responsePayload := triggerLambdaFunction(t, functionName, []byte{}, resourceCollection, logger)
-//	response := getResponseFromPayload(t, responsePayload, logger)
-//
-//	logger.Printf("Got response from lambda function:\n%s", response)
-//
-//	if !strings.Contains(response, "Example Domain") {
-//		t.Fatal("Response did not contain expected text 'Example Domain'")
-//	}
-//}
+func TestLambdaVpc(t *testing.T) {
+	t.Parallel()
 
-func getResponseFromPayload(t *testing.T, payload []byte, logger *log.Logger) string {
-	logger.Println("Parsing response from payload from Lambda function.")
+	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "/examples/lambda-vpc")
 
-	response := map[string]string{}
-	if err := json.Unmarshal(payload, &response); err != nil {
-		t.Fatalf("Failed to unmarshal response payload from lambda function as map: %v", err)
+	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, testFolder)
+
+	defer terraform.Destroy(t, terraformOptions)
+
+	terraformOptions.Vars["vpc_name"] = fmt.Sprintf("lambda-vpc-example-%s", random.UniqueId())
+
+	terraform.InitAndApply(t, terraformOptions)
+
+	functionName := terraform.OutputRequired(t, terraformOptions, "function_name")
+
+	response := triggerLambdaFunction(t, functionName, []byte{}, awsRegion)
+
+	logger.Logf(t, "Got response from lambda function:\n%s", response)
+
+	if !strings.Contains(response, "Example Domain") {
+		t.Fatal("Response did not contain expected text 'Example Domain'")
 	}
-
-	responseStr, hasResponse := response["response"]
-	if !hasResponse {
-		t.Fatalf("Payload did not contain response data! %v", response)
-	}
-
-	return responseStr
 }

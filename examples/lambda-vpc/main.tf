@@ -19,7 +19,8 @@ provider "aws" {
 }
 
 locals {
-  fs_path = "jenkins"
+  lambda_description = "An example of how to process images in S3 with Lambda"
+  fs_path            = "jenkins"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -32,8 +33,14 @@ module "lambda_function" {
   # source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
   source = "../../modules/lambda"
 
-  name        = var.name
-  description = "An example of how to process images in S3 with Lambda"
+  name = var.name
+  # This is a hack to force the lambda function's creation to depend upon the availability of the efs mount targets
+  # Without this hack, the targets may not be ready by the time the function attempts to access them, leading to an apply-time error
+  description = (
+    module.efs.mount_target_ids == null ?
+    local.lambda_description
+    : local.lambda_description
+  )
 
   source_path = "${path.module}/javascript"
   runtime     = "nodejs12.x"
@@ -84,8 +91,8 @@ module "vpc" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE AN EFS + ACCESS POINT
-# We will give the Lambda function access to this EFS. Note that in order for a Lambda function to mount to an EFS,
-# it must be deployed inside a VPC, as we have done above.
+# We will give the Lambda function access to this EFS. Note that in order for a Lambda function to mount an EFS
+# access point, it must be deployed inside a VPC, as we have done above.
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "efs" {
@@ -94,6 +101,9 @@ module "efs" {
   name       = var.name
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.public_subnet_ids
+
+  # Allow the lambda function to access the EFS access point
+  allow_connections_from_security_groups = [module.lambda_function.security_group_id]
 
   efs_access_points = {
     jenkins = {
