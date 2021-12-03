@@ -118,6 +118,12 @@ variable "subnet_ids" {
   default     = []
 }
 
+variable "additional_security_group_ids" {
+  description = "A list of Security Group IDs that should be attached to the Lambda function when running in a VPC. Only used if var.run_in_vpc is true."
+  type        = list(string)
+  default     = []
+}
+
 variable "mount_to_file_system" {
   description = "Set to true to mount your Lambda function on an EFS. Note that the lambda must also be deployed inside a VPC (run_in_vpc must be set to true) for this config to have any effect."
   type        = bool

@@ -76,8 +76,11 @@ resource "aws_lambda_function" "function" {
     # variable.
     for_each = var.run_in_vpc ? ["use_vpc_config"] : []
     content {
-      subnet_ids         = var.subnet_ids
-      security_group_ids = aws_security_group.lambda.*.id
+      subnet_ids = var.subnet_ids
+      security_group_ids = concat(
+        aws_security_group.lambda.*.id,
+        var.additional_security_group_ids,
+      )
     }
   }
 
