@@ -10,7 +10,7 @@ env: &env
     TERRAFORM_VERSION: 1.0.3
     TERRAGRUNT_VERSION: NONE
     PACKER_VERSION: NONE
-    GOLANG_VERSION: 1.13.8
+    GOLANG_VERSION: 1.16
 version: 2.0
 jobs:
   precommit:
@@ -33,7 +33,7 @@ jobs:
       # execute automatically every time before you commit, ensuring the build never fails at this step!
       - run:
           command: |
-            pip install pre-commit==1.21.0 cfgv==2.0.1 zipp==1.1.0 yapf
+            pip install pre-commit
             go get golang.org/x/tools/cmd/goimports
             export GOPATH=~/go/bin && export PATH=$PATH:$GOPATH
             pre-commit install
@@ -53,13 +53,15 @@ jobs:
               --terraform-version ${TERRAFORM_VERSION} \
               --terragrunt-version ${TERRAGRUNT_VERSION} \
               --packer-version ${PACKER_VERSION} \
-              --go-src-path ./test
+              --go-version ${GOLANG_VERSION}
       - run:
           name: run tests
+          # NOTE: we set a generous timeout here because destroying a VPC based lambda takes a long time due to
+          # https://aws.amazon.com/blogs/compute/update-issue-affecting-hashicorp-terraform-resource-deletions-after-the-vpc-improvements-to-aws-lambda/
           command: |
             mkdir -p /tmp/logs
-            run-go-tests --path test --timeout 1h | tee /tmp/logs/all.log
-          no_output_timeout: 3600s
+            run-go-tests --path test --timeout 90m | tee /tmp/logs/all.log
+          no_output_timeout: 5400s
       - run:
           command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
           when: always

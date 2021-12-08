@@ -148,8 +148,14 @@ variable "skip_zip" {
   default     = false
 }
 
+variable "iam_role_tags" {
+  description = "A map of tags to apply to the IAM role created for the lambda function. This will be merged with the var.tags parameter. Only used if var.existing_role_arn is null."
+  type        = map(string)
+  default     = {}
+}
+
 variable "tags" {
-  description = "A map of tags to apply to the Lambda function."
+  description = "A map of tags to apply to the Lambda function and all resources created in this module."
   type        = map(string)
   default     = {}
 }
@@ -162,6 +168,12 @@ variable "lambda_role_permissions_boundary_arn" {
 
 variable "assume_role_policy" {
   description = "A custom assume role policy for the IAM role for this Lambda function. If not set, the default is a policy that allows the Lambda service to assume the IAM role, which is what most users will need. However, you can use this variable to override the policy for special cases, such as using a Lambda function to rotate AWS Secrets Manager secrets."
+  type        = string
+  default     = null
+}
+
+variable "iam_role_name" {
+  description = "The name to use for the IAM role created for the lambda function. If null, default to the function name (var.name). Only used if var.existing_role_arn is null."
   type        = string
   default     = null
 }

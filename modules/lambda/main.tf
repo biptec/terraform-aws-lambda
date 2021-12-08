@@ -184,11 +184,14 @@ resource "aws_security_group_rule" "allow_outbound_all" {
 
 resource "aws_iam_role" "lambda" {
   count                = var.create_resources && local.create_iam_entities ? 1 : 0
-  name                 = var.name
+  name                 = var.iam_role_name == null ? var.name : var.iam_role_name
   assume_role_policy   = var.assume_role_policy == null ? data.aws_iam_policy_document.lambda_role.json : var.assume_role_policy
   permissions_boundary = var.lambda_role_permissions_boundary_arn
 
-  tags = var.tags
+  tags = merge(
+    var.iam_role_tags,
+    var.tags,
+  )
 }
 
 data "aws_iam_policy_document" "lambda_role" {
