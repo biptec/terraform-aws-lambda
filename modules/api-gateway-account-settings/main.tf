@@ -50,10 +50,23 @@ data "aws_iam_policy_document" "api_gateway_iam_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "cloudwatch" {
-  count  = var.create_resources ? 1 : 0
+  count  = var.create_resources && local.use_inline_policies ? 1 : 0
   name   = "cloudwatch"
-  role   = aws_iam_role.cloudwatch.*.id[0]
+  role   = aws_iam_role.cloudwatch[0].id
   policy = data.aws_iam_policy_document.cloudwatch_logs.json
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch" {
+  count      = var.create_resources && var.use_managed_iam_policies ? 1 : 0
+  role       = aws_iam_role.cloudwatch[0].id
+  policy_arn = aws_iam_policy.cloudwatch[0].arn
+}
+
+resource "aws_iam_policy" "cloudwatch" {
+  count       = var.create_resources && var.use_managed_iam_policies ? 1 : 0
+  name_prefix = "api-gateway-allow-cloudwatch"
+  description = "IAM Policy to allow API Gateway to access CloudWatch for reporting metrics and logs."
+  policy      = data.aws_iam_policy_document.cloudwatch_logs.json
 }
 
 data "aws_iam_policy_document" "cloudwatch_logs" {

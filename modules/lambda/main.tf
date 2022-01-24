@@ -13,11 +13,15 @@ terraform {
 # The datasource will actually be used only when referencing an existing IAM entity, otherwise we provide a dummy input
 # since `arn` attribute is required, and to avoid using `count`, which might have side effects
 data "aws_arn" "role" {
-  arn = local.create_iam_entities ? "arn:aws:iam::123456789012:dummy" : var.existing_role_arn
+  arn = (
+    var.existing_role_arn == null
+    ? "arn:aws:iam::123456789012:dummy"
+    : var.existing_role_arn
+  )
 }
 
 locals {
-  create_iam_entities = var.existing_role_arn == null
+  create_iam_entities = var.create_resources && var.existing_role_arn == null
   role_arn            = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].arn : var.existing_role_arn
   # The `aws_arn` datasource returns full resource name, which will have the `role/` prefix in case of IAM role - strip
   # it away, to make compatible with `aws_iam_role.id` attribute
@@ -63,7 +67,7 @@ resource "aws_lambda_function" "function" {
 
   reserved_concurrent_executions = var.reserved_concurrent_executions
 
-  role = var.create_resources ? local.role_arn : null
+  role = local.role_arn
 
   tags = var.tags
 
@@ -183,7 +187,7 @@ resource "aws_security_group_rule" "allow_outbound_all" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "lambda" {
-  count                = var.create_resources && local.create_iam_entities ? 1 : 0
+  count                = local.create_iam_entities ? 1 : 0
   name                 = var.iam_role_name == null ? var.name : var.iam_role_name
   assume_role_policy   = var.assume_role_policy == null ? data.aws_iam_policy_document.lambda_role.json : var.assume_role_policy
   permissions_boundary = var.lambda_role_permissions_boundary_arn
@@ -211,10 +215,32 @@ data "aws_iam_policy_document" "lambda_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "logging_for_lambda" {
-  count  = var.create_resources && local.create_iam_entities ? 1 : 0
+  count = (
+    local.create_iam_entities && local.use_inline_policies
+    ? 1 : 0
+  )
   name   = "${var.name}-logging"
-  role   = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : null
+  role   = local.role_id
   policy = data.aws_iam_policy_document.logging_for_lambda.json
+}
+
+resource "aws_iam_role_policy_attachment" "logging_for_lambda" {
+  count = (
+    local.create_iam_entities && var.use_managed_iam_policies
+    ? 1 : 0
+  )
+  role       = local.role_id
+  policy_arn = aws_iam_policy.logging_for_lambda[0].arn
+}
+
+resource "aws_iam_policy" "logging_for_lambda" {
+  count = (
+    local.create_iam_entities && var.use_managed_iam_policies
+    ? 1 : 0
+  )
+  name_prefix = "${var.name}-logging"
+  description = "IAM Policy to allow Lambda functions to log to CloudWatch Logs."
+  policy      = data.aws_iam_policy_document.logging_for_lambda.json
 }
 
 data "aws_iam_policy_document" "logging_for_lambda" {
@@ -237,11 +263,33 @@ data "aws_iam_policy_document" "logging_for_lambda" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "network_interfaces_for_lambda" {
-  count = var.create_resources && local.create_iam_entities && var.run_in_vpc ? 1 : 0
+  count = (
+    local.create_iam_entities && var.run_in_vpc && local.use_inline_policies
+    ? 1 : 0
+  )
 
   name   = "${var.name}-network-interfaces"
-  role   = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : null
+  role   = local.role_id
   policy = data.aws_iam_policy_document.network_interfaces_for_lambda.json
+}
+
+resource "aws_iam_role_policy_attachment" "network_interfaces_for_lambda" {
+  count = (
+    local.create_iam_entities && var.run_in_vpc && var.use_managed_iam_policies
+    ? 1 : 0
+  )
+  role       = local.role_id
+  policy_arn = aws_iam_policy.network_interfaces_for_lambda[0].arn
+}
+
+resource "aws_iam_policy" "network_interfaces_for_lambda" {
+  count = (
+    local.create_iam_entities && var.run_in_vpc && var.use_managed_iam_policies
+    ? 1 : 0
+  )
+  name_prefix = "${var.name}-netiface"
+  description = "IAM Policy to allow Lambda functions manage Network Interfaces."
+  policy      = data.aws_iam_policy_document.network_interfaces_for_lambda.json
 }
 
 data "aws_iam_policy_document" "network_interfaces_for_lambda" {

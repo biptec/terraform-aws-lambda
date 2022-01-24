@@ -26,6 +26,9 @@ module "keep_warm" {
     FUNCTION_TO_EVENT_MAP = jsonencode(var.function_to_event_map)
     CONCURRENCY           = var.concurrency
   }
+
+  # Feed forward backward compatibility feature flags
+  use_managed_iam_policies = var.use_managed_iam_policies
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -45,9 +48,23 @@ module "scheduled" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "allow_invoking_other_functions" {
+  count  = local.use_inline_policies ? 1 : 0
   name   = "allow-invoking-other-functions"
   role   = module.keep_warm.iam_role_id
   policy = data.aws_iam_policy_document.allow_invoking_other_functions.json
+}
+
+resource "aws_iam_role_policy_attachment" "allow_invoking_other_functions" {
+  count      = var.use_managed_iam_policies ? 1 : 0
+  role       = module.keep_warm.iam_role_id
+  policy_arn = aws_iam_policy.allow_invoking_other_functions[0].arn
+}
+
+resource "aws_iam_policy" "allow_invoking_other_functions" {
+  count       = var.use_managed_iam_policies ? 1 : 0
+  name_prefix = "${var.name}-allow-invoke"
+  description = "IAM Policy to allow invoking Lambda functions on a periodic schedule."
+  policy      = data.aws_iam_policy_document.allow_invoking_other_functions.json
 }
 
 data "aws_iam_policy_document" "allow_invoking_other_functions" {

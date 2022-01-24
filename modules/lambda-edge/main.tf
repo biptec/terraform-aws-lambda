@@ -118,9 +118,23 @@ data "aws_iam_policy_document" "lambda_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "logging_for_lambda" {
+  count  = local.use_inline_policies ? 1 : 0
   name   = "${var.name}-logging"
   role   = aws_iam_role.lambda.id
   policy = data.aws_iam_policy_document.logging_for_lambda.json
+}
+
+resource "aws_iam_role_policy_attachment" "logging_for_lambda" {
+  count      = var.use_managed_iam_policies ? 1 : 0
+  role       = aws_iam_role.lambda.id
+  policy_arn = aws_iam_policy.logging_for_lambda[0].arn
+}
+
+resource "aws_iam_policy" "logging_for_lambda" {
+  count       = var.use_managed_iam_policies ? 1 : 0
+  name_prefix = "${var.name}-logging"
+  description = "IAM Policy to allow Lambda functions to log to CloudWatch Logs."
+  policy      = data.aws_iam_policy_document.logging_for_lambda.json
 }
 
 data "aws_iam_policy_document" "logging_for_lambda" {
