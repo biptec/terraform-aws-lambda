@@ -32,7 +32,7 @@ URL at this repo:
 
 ```hcl
 module "api_gateway_account" {
-  source = "git::git@github.com:gruntwork-io/package-sam.git//modules/api-gateway-account-?ref=v0.0.1"
+  source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/api-gateway-account-settings-?ref=v0.0.1"
 
   iam_role_name = "api_gateway_cloudwatch_global"
 }
