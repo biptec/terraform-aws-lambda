@@ -142,7 +142,7 @@ variable "should_create_cloudwatch_log_group" {
 }
 
 variable "use_managed_iam_policies" {
-  description = "When true, all IAM policies will be managed as dedicated policies that are attached to the IAM roles. Dedicated managed policies are more friendly to automated policy checkers, which can go through and scan a single resource for findings. As such, it is important to avoid inline policies when targetting compliance with various security standards."
+  description = "When true, all IAM policies will be managed as dedicated policies rather than inline policies attached to the IAM roles. Dedicated managed policies are friendlier to automated policy checkers, which may scan a single resource for findings. As such, it is important to avoid inline policies when targeting compliance with various security standards."
   type        = bool
   default     = true
 }
