@@ -22,6 +22,13 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "function" {
+
+  depends_on = [
+    # Make sure the CloudWatch Log Group is created before creating the function so that Lambda doesn't create a new
+    # one.
+    aws_cloudwatch_log_group.log_aggregation,
+  ]
+
   function_name = var.name
   description   = var.description
   publish       = var.enable_versioning
@@ -77,6 +84,18 @@ locals {
   )
 
   zip_file_path = var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONALLY CREATE A CLOUDWATCH LOG GROUP FOR THE LAMBDA JOB
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_cloudwatch_log_group" "log_aggregation" {
+  count             = var.should_create_cloudwatch_log_group ? 1 : 0
+  name              = "/aws/lambda/${var.name}"
+  retention_in_days = var.cloudwatch_log_group_retention_in_days
+  kms_key_id        = var.cloudwatch_log_group_kms_key_id
+  tags              = var.cloudwatch_log_group_tags
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

@@ -27,8 +27,13 @@ module "keep_warm" {
     CONCURRENCY           = var.concurrency
   }
 
+  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
+  cloudwatch_log_group_kms_key_id        = var.cloudwatch_log_group_kms_key_id
+  cloudwatch_log_group_tags              = var.cloudwatch_log_group_tags
+
   # Feed forward backward compatibility feature flags
-  use_managed_iam_policies = var.use_managed_iam_policies
+  should_create_cloudwatch_log_group = var.should_create_cloudwatch_log_group
+  use_managed_iam_policies           = var.use_managed_iam_policies
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

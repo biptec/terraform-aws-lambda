@@ -35,9 +35,15 @@ locals {
 resource "aws_lambda_function" "function" {
   count = var.create_resources ? 1 : 0
 
-  # We need this policy to be created before we try to create the lambda job, or you get an error about not having
-  # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC.
-  depends_on = [aws_iam_role_policy.network_interfaces_for_lambda]
+  depends_on = [
+    # We need this policy to be created before we try to create the lambda job, or you get an error about not having
+    # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC.
+    aws_iam_role_policy.network_interfaces_for_lambda,
+
+    # Make sure the CloudWatch Log Group is created before creating the function so that Lambda doesn't create a new
+    # one.
+    aws_cloudwatch_log_group.log_aggregation,
+  ]
 
   function_name = var.name
   description   = var.description
@@ -63,7 +69,6 @@ resource "aws_lambda_function" "function" {
   timeout      = var.timeout
   memory_size  = var.memory_size
   kms_key_arn  = var.kms_key_arn
-
 
   reserved_concurrent_executions = var.reserved_concurrent_executions
 
@@ -151,6 +156,17 @@ locals {
   zip_file_path = var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONALLY CREATE A CLOUDWATCH LOG GROUP FOR THE LAMBDA JOB
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_cloudwatch_log_group" "log_aggregation" {
+  count             = var.create_resources && var.should_create_cloudwatch_log_group ? 1 : 0
+  name              = "/aws/lambda/${var.name}"
+  retention_in_days = var.cloudwatch_log_group_retention_in_days
+  kms_key_id        = var.cloudwatch_log_group_kms_key_id
+  tags              = var.cloudwatch_log_group_tags
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A SECURITY GROUP FOR THE LAMBDA JOB
