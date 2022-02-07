@@ -22,7 +22,7 @@ for the full details):
 
 * See the [root README](/README.md) for instructions on using Terraform modules.
 * See the [lambda-edge example](/examples/lambda-edge) folder for sample usage.
-* See [vars.tf](./vars.tf) for all the variables you can set on this module.
+* See [variables.tf](./variables.tf) for all the variables you can set on this module.
 
 The general idea is to:
 
@@ -84,7 +84,7 @@ triggers:
 1. Using terraform. To link the Lambda@Edge function to the [s3-cloudfront module from
    terraform-aws-static-assets](https://github.com/gruntwork-io/terraform-aws-static-assets/tree/master/modules/s3-cloudfront),
    you can use the
-   [default_lambda_associations](https://github.com/gruntwork-io/terraform-aws-static-assets/blob/master/modules/s3-cloudfront/vars.tf#L308)
+   [default_lambda_associations](https://github.com/gruntwork-io/terraform-aws-static-assets/blob/master/modules/s3-cloudfront/variables.tf#L308)
    input variable.
 2. Manually from the AWS Console as described in the
    [Lambda@Edge documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html#lambda-edge-add-triggers)

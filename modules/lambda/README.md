@@ -11,7 +11,7 @@ you a way to run code on-demand in AWS without having to manage servers.
 
 * See the [root README](/README.md) for instructions on using Terraform modules.
 * See the [lambda-s3 example](/examples/lambda-s3) folder for sample usage.
-* See [vars.tf](./vars.tf) for all the variables you can set on this module.
+* See [variables.tf](./variables.tf) for all the variables you can set on this module.
 
 The general idea is to:
 

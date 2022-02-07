@@ -15,7 +15,7 @@ see:
 
 - See the [root README](/README.md) for instructions on using Terraform modules.
 - See the [lambda-keep-warm example](/examples/lambda-keep-warm) folder for sample usage.
-- See [vars.tf](./vars.tf) for all the variables you can set on this module.
+- See [variables.tf](./variables.tf) for all the variables you can set on this module.
 
 The basic idea is to:
 

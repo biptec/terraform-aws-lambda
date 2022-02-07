@@ -54,7 +54,7 @@ module "ecs_cluster" {
 *Note: the double slash (`//`) is intentional and required. It's part of Terraform's Git syntax (see [module
 sources](https://www.terraform.io/docs/modules/sources.html)).*
 
-See the module's documentation and `vars.tf` file for all the parameters you can set. Run `terraform get -update` to
+See the module's documentation and `variables.tf` file for all the parameters you can set. Run `terraform get -update` to
 pull the latest version of this module from this repo before running the standard  `terraform plan` and
 `terraform apply` commands.
 

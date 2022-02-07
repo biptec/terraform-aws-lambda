@@ -12,7 +12,7 @@ daily snapshot of your servers.
 
 * See the [root README](/README.md) for instructions on using Terraform modules.
 * See the [scheduled-lambda-job example](/examples/scheduled-lambda-job) folder for sample usage.
-* See [vars.tf](./vars.tf) for all the variables you can set on this module.
+* See [variables.tf](./variables.tf) for all the variables you can set on this module.
 
 The general idea is to:
 
