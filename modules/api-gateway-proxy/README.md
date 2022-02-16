@@ -1,7 +1,7 @@
 # API Gateway Proxy Module
 
 [![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_aws_serverless)
-![Terraform Version](https://img.shields.io/badge/tf-%3E%3D1.0.0-blue.svg)
+![Terraform Version](https://img.shields.io/badge/tf-%3E%3D1.1.0-blue.svg)
 
 This module creates an [API Gateway](https://aws.amazon.com/api-gateway/) that can be used to expose your serverless
 applications running in [AWS Lambda](https://aws.amazon.com/lambda/).
