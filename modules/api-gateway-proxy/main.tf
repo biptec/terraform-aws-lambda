@@ -13,7 +13,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 2.58"
+      version = ">= 2.58, < 4.0"
       # Edge API Gateway domains require ACM certs to be in us-east-1, so we need an aws provider alias that is
       # configured to the us-east-1 region when looking up an ACM cert for the domain.
       configuration_aliases = [aws.us_east_1]
