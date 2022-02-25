@@ -86,11 +86,13 @@ locals {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONALLY CREATE A CLOUDWATCH LOG GROUP FOR THE LAMBDA JOB
+# AWS documentation states that CloudWatch log group names for lambda@edge funtions are prepended with `us-east-1.`.
+# https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-cloudwatch-metrics-logging.html
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_cloudwatch_log_group" "log_aggregation" {
   count             = var.should_create_cloudwatch_log_group ? 1 : 0
-  name              = "/aws/lambda/${var.name}"
+  name              = "/aws/lambda/us-east-1.${var.name}"
   retention_in_days = var.cloudwatch_log_group_retention_in_days
   kms_key_id        = var.cloudwatch_log_group_kms_key_id
   tags              = var.cloudwatch_log_group_tags
