@@ -38,6 +38,12 @@ variable "s3_object_version" {
   default     = null
 }
 
+variable "set_source_code_hash" {
+  description = "If set to false, this function will no longer set the source_code_hash parameter, so this module will no longer detect and upload changes to the deployment package. This is primarily useful if you update the Lambda function from outside of this module (e.g., you have scripts that do it separately) and want to avoid a plan diff. Used only if var.source_path is non-empty."
+  type        = bool
+  default     = true
+}
+
 variable "handler" {
   description = "The function entrypoint in your code. This is typically the name of a function or method in your code that AWS will execute when this Lambda function is triggered."
   type        = string
