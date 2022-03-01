@@ -16,7 +16,7 @@ jobs:
   precommit:
     <<: *env
     docker:
-      - image: circleci/python:3.8.1
+      - image: circleci/python:3.10.0
     steps:
       - checkout
       - run:
