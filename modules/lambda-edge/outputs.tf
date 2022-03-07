@@ -25,3 +25,8 @@ output "qualified_arn" {
 output "version" {
   value = aws_lambda_function.function.version
 }
+
+output "cloudwatch_log_group_name" {
+  description = "Name of the (optionally) created CloudWatch log group for the lambda function."
+  value       = length(aws_cloudwatch_log_group.log_aggregation) > 0 ? aws_cloudwatch_log_group.log_aggregation[0].id : null
+}

@@ -99,6 +99,20 @@ resource "aws_cloudwatch_log_group" "log_aggregation" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
+# OPTIONALLY CREATE A CLOUDWATCH LOG SUBSCRIPTION FILTER FOR THE LAMBDA JOB
+# ---------------------------------------------------------------------------------------------------------------------
+resource "aws_cloudwatch_log_subscription_filter" "log_aggregation" {
+  count = var.should_create_cloudwatch_log_group && var.cloudwatch_log_group_subscription_destination_arn != null ? 1 : 0
+
+  name            = "${aws_cloudwatch_log_group.log_aggregation[0].id}-subscription"
+  log_group_name  = aws_cloudwatch_log_group.log_aggregation[0].id
+  filter_pattern  = var.cloudwatch_log_group_subscription_filter_pattern
+  destination_arn = var.cloudwatch_log_group_subscription_destination_arn
+  role_arn        = var.cloudwatch_log_group_subscription_role_arn
+  distribution    = var.cloudwatch_log_group_subscription_distribution
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # CREATE AN IAM ROLE FOR THE LAMBDA FUNCTION
 # This controls what resources the lambda function can access and who can trigger the lambda job. We export the id of
 # the IAM role so users can add custom permissions.

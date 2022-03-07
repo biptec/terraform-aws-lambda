@@ -41,3 +41,8 @@ output "iam_role_arn" {
 output "security_group_id" {
   value = element(concat(aws_security_group.lambda.*.id, [""]), 0)
 }
+
+output "cloudwatch_log_group_name" {
+  description = "Name of the (optionally) created CloudWatch log group for the lambda function."
+  value       = length(aws_cloudwatch_log_group.log_aggregation) > 0 ? aws_cloudwatch_log_group.log_aggregation[0].id : null
+}
