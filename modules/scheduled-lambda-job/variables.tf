@@ -29,6 +29,12 @@ variable "namespace" {
   default     = null
 }
 
+variable "lambda_function_input" {
+  description = "JSON text that will be passed to the lambda function on each invoke."
+  type        = string
+  default     = null
+}
+
 variable "create_resources" {
   description = "Set to false to have this module skip creating resources. This weird parameter exists solely because Terraform does not support conditional modules. Therefore, this is a hack to allow you to conditionally decide if this module should create anything or not."
   type        = bool

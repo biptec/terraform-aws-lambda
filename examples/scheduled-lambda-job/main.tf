@@ -54,7 +54,8 @@ module "scheduled" {
   source           = "../../modules/scheduled-lambda-job"
   create_resources = var.create_resources
 
-  lambda_function_name = module.lambda_function.function_name
-  lambda_function_arn  = module.lambda_function.function_arn
-  schedule_expression  = "rate(1 minute)"
+  lambda_function_name  = module.lambda_function.function_name
+  lambda_function_arn   = module.lambda_function.function_arn
+  lambda_function_input = jsonencode({ uniqueID = var.name })
+  schedule_expression   = "rate(1 minute)"
 }
