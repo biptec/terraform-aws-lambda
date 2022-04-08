@@ -60,7 +60,7 @@ module "lambda_function" {
   # lambda only supports one EFS / access point mount
   mount_to_file_system         = true
   file_system_mount_path       = var.efs_mount_path
-  file_system_access_point_arn = "arn:aws:elasticfilesystem:${var.aws_region}:${data.aws_caller_identity.current.account_id}:access-point/${module.efs.access_point_ids[local.fs_path]}"
+  file_system_access_point_arn = "arn:${data.aws_partition.current.partition}:elasticfilesystem:${var.aws_region}:${data.aws_caller_identity.current.account_id}:access-point/${module.efs.access_point_ids[local.fs_path]}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -131,3 +131,9 @@ module "efs" {
 data "aws_caller_identity" "current" {}
 
 data "aws_availability_zones" "all" {}
+
+# Use this data source to lookup information about the current AWS partition in which Terraform is working.
+# This will return the identifier of the current partition (e.g., aws in AWS Commercial, aws-us-gov in AWS GovCloud,
+# aws-cn in AWS China).
+# https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+data "aws_partition" "current" {}
