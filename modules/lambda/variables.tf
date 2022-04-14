@@ -83,6 +83,12 @@ variable "description" {
   default     = null
 }
 
+variable "security_group_description" {
+  description = "A description of what the security group is used for."
+  type        = string
+  default     = null
+}
+
 variable "environment_variables" {
   description = "A map of environment variables to pass to the Lambda function. AWS will automatically encrypt these with KMS and decrypt them when running the function."
   type        = map(string)

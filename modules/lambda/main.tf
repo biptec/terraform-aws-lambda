@@ -197,7 +197,7 @@ resource "aws_security_group" "lambda" {
   count = var.create_resources && var.run_in_vpc ? 1 : 0
 
   name        = "${var.name}-lambda"
-  description = "Security group for the lambda function ${var.name}"
+  description = var.security_group_description != null ? var.security_group_description : "Security group for the lambda function ${var.name}"
   vpc_id      = var.vpc_id
 
   tags = var.tags
