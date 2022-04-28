@@ -117,7 +117,7 @@ resource "aws_lambda_function" "function" {
 
   # The Lambda OCI image configurations.
   dynamic "image_config" {
-    for_each = local.use_docker_image ? ["once"] : []
+    for_each = (length(var.entry_point) != 0 || length(var.command) != 0 || var.working_directory != null) && local.use_docker_image ? ["once"] : []
     content {
       entry_point       = var.entry_point
       command           = var.command
