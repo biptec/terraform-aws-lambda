@@ -16,7 +16,7 @@ control over the API Gateway settings, consider using [the Serverless framework]
 recommend using a framework like Serverless to avoid the verbose configuration of routing for API Gateway in Terraform.
 
 
-![Serverless architecture](/_docs/serverless-architecture.png?raw=true)
+![Serverless architecture](https://github.com/biptec/terraform-aws-lambda/blob/v0.13.2/_docs/serverless-architecture.png?raw=true)
 
 **NOTE:** This module specifies `configuration_aliases`, requiring an `aws` provider configured for the `us-east-1`
 region with the alias `us_east_1` to be provided.
@@ -44,9 +44,9 @@ before, make sure to read [How to use the Gruntwork Infrastructure as Code Libra
 
 ### Repo organization
 
-* [modules](/modules): the main implementation code for this repo, broken down into multiple standalone, orthogonal submodules.
-* [examples](/examples): This folder contains working examples of how to use the submodules.
-* [test](/test): Automated tests for the modules and examples.
+* [modules](https://github.com/biptec/terraform-aws-lambda/blob/v0.13.2/modules): the main implementation code for this repo, broken down into multiple standalone, orthogonal submodules.
+* [examples](https://github.com/biptec/terraform-aws-lambda/blob/v0.13.2/examples): This folder contains working examples of how to use the submodules.
+* [test](https://github.com/biptec/terraform-aws-lambda/blob/v0.13.2/test): Automated tests for the modules and examples.
 
 
 
@@ -55,7 +55,7 @@ before, make sure to read [How to use the Gruntwork Infrastructure as Code Libra
 
 If you just want to try this repo out for experimenting and learning, check out the following resources:
 
-* [examples folder](/examples): The `examples` folder contains sample code optimized for learning, experimenting, and testing (but not production usage).
+* [examples folder](https://github.com/biptec/terraform-aws-lambda/blob/v0.13.2/examples): The `examples` folder contains sample code optimized for learning, experimenting, and testing (but not production usage).
 
 
 ## Manage
