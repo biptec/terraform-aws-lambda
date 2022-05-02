@@ -1,13 +1,17 @@
+***WARNING: THIS REPO IS AN AUTO-GENERATED COPY.*** *This repo has been copied from [Gruntwork’s](https://gruntwork.io/) GitHub repositories so that you can consume it from your company’s own internal Git repositories. This copy is automatically created and updated by the `repo-copier` CLI tool. If you need to make changes to this repo, you should make the changes in a separate fork, and NOT make changes directly in this repo, as otherwise, the `repo-copier` will overwrite your changes! Please see the `repo-copier` [documentation](https://github.com/gruntwork-io/repo-copier) for more information on how the code is copied, how cross-references are updated, how the changelog is handled, etc.*
+
+***
+
 # AWS Lambda
 
 This repo contains modules for deploying and managing [AWS Lambda](https://aws.amazon.com/lambda/) functions:
 
-* [lambda](/modules/lambda): A module for deploying and managing Lambda functions.
-* [lambda-edge](/modules/lambda-edge): A module for deploying and managing Lambda@Edge functions.
-* [scheduled-lambda-job](/modules/scheduled-lambda-job): A module that configures AWS to run a Lambda function on a
+* [lambda](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.1/modules/lambda): A module for deploying and managing Lambda functions.
+* [lambda-edge](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.1/modules/lambda-edge): A module for deploying and managing Lambda@Edge functions.
+* [scheduled-lambda-job](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.1/modules/scheduled-lambda-job): A module that configures AWS to run a Lambda function on a
   periodic basis.
 
-Click on each module above to see its documentation. Head over to the [examples folder](/examples) for examples.
+Click on each module above to see its documentation. Head over to the [examples folder](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.1/examples) for examples.
 
 
 
@@ -93,7 +97,7 @@ The version is defined using Git tags.  Use GitHub to create a release, which wi
 
 ### Tests
 
-See the [test](/test) folder for details.
+See the [test](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.1/test) folder for details.
 
 
 
@@ -101,4 +105,4 @@ See the [test](/test) folder for details.
 
 ## License
 
-Please see [LICENSE.txt](/LICENSE.txt) for details on how the code in this repo is licensed.
+Please see [LICENSE.txt](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.1/LICENSE.txt) for details on how the code in this repo is licensed.
