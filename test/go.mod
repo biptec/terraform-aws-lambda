@@ -1,4 +1,4 @@
-module github.com/gruntwork-io/package-lambda/test
+module github.com/biptec/terraform-aws-lambda/test
 
 go 1.13
 
