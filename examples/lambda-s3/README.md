@@ -12,7 +12,7 @@ S3 and return the contents of that image base64 encoded.
 To apply the Terraform templates:
 
 1. Install [Terraform](https://www.terraform.io/).
-1. Open `variables.tf`, set the environment variables specified at the top of the file, and fill in any other variables that
+1. Open `vars.tf`, set the environment variables specified at the top of the file, and fill in any other variables that
    don't have a default.
 1. Run `terraform get`.
 1. Run `terraform plan`.
@@ -56,5 +56,5 @@ write it to disk:
 python python/test_harness.py --region us-east-1 --bucket lambda-s3-example-images-test --filename gruntwork-logo.png
 ```
 
-See also the [lambda-build example](/examples/lambda-build) to see how you can execute build and packaging steps for
+See also the [lambda-build example](https://github.com/biptec/terraform-aws-lambda/blob/master/examples/lambda-build) to see how you can execute build and packaging steps for
 your code before uploading it using Terraform.

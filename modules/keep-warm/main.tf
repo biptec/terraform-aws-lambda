@@ -1,12 +1,8 @@
 terraform {
-  # This module is now only being tested with Terraform 1.1.x. However, to make upgrading easier, we are setting 1.0.0 as the minimum version.
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "< 4.0"
-    }
-  }
+  # This module is now only being tested with Terraform 1.0.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 1.0.x code.
+  required_version = ">= 0.12.26"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -30,14 +26,6 @@ module "keep_warm" {
     FUNCTION_TO_EVENT_MAP = jsonencode(var.function_to_event_map)
     CONCURRENCY           = var.concurrency
   }
-
-  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
-  cloudwatch_log_group_kms_key_id        = var.cloudwatch_log_group_kms_key_id
-  cloudwatch_log_group_tags              = var.cloudwatch_log_group_tags
-
-  # Feed forward backward compatibility feature flags
-  should_create_cloudwatch_log_group = var.should_create_cloudwatch_log_group
-  use_managed_iam_policies           = var.use_managed_iam_policies
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -57,23 +45,9 @@ module "scheduled" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "allow_invoking_other_functions" {
-  count  = local.use_inline_policies ? 1 : 0
   name   = "allow-invoking-other-functions"
   role   = module.keep_warm.iam_role_id
   policy = data.aws_iam_policy_document.allow_invoking_other_functions.json
-}
-
-resource "aws_iam_role_policy_attachment" "allow_invoking_other_functions" {
-  count      = var.use_managed_iam_policies ? 1 : 0
-  role       = module.keep_warm.iam_role_id
-  policy_arn = aws_iam_policy.allow_invoking_other_functions[0].arn
-}
-
-resource "aws_iam_policy" "allow_invoking_other_functions" {
-  count       = var.use_managed_iam_policies ? 1 : 0
-  name_prefix = "${var.name}-allow-invoke"
-  description = "IAM Policy to allow invoking Lambda functions on a periodic schedule."
-  policy      = data.aws_iam_policy_document.allow_invoking_other_functions.json
 }
 
 data "aws_iam_policy_document" "allow_invoking_other_functions" {

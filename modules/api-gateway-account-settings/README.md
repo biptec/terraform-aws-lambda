@@ -17,7 +17,7 @@ The corresponding screen from the AWS Console is shown below:
 
 ## Quick start
 
-Check out the [examples](/examples) for sample code that demonstrates how to use this module.
+Check out the [examples](https://github.com/biptec/terraform-aws-lambda/blob/master/examples) for sample code that demonstrates how to use this module.
 
 ## How do you use this module?
 
@@ -32,7 +32,7 @@ URL at this repo:
 
 ```hcl
 module "api_gateway_account" {
-  source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/api-gateway-account-settings-?ref=v0.0.1"
+  source = "git::git@github.com:gruntwork-io/package-sam.git//modules/api-gateway-account-?ref=v0.0.1"
 
   iam_role_name = "api_gateway_cloudwatch_global"
 }

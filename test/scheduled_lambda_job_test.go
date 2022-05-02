@@ -8,47 +8,25 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	terraws "github.com/gruntwork-io/terratest/modules/aws"
-	"github.com/gruntwork-io/terratest/modules/retry"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
+	terraws "github.com/biptec/terratest/modules/aws"
+	"github.com/biptec/terratest/modules/retry"
+	"github.com/biptec/terratest/modules/terraform"
+	test_structure "github.com/biptec/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 
-const lambdaJobExpectedLogEntry = "lambda-job-example completed successfully"
+const EXPECTED_LOG_ENTRY = "lambda-job-example completed successfully"
 
 func TestScheduledLambdaJob(t *testing.T) {
 	t.Parallel()
 
-	// Uncomment any of the following to skip that stage
-	//os.Setenv("SKIP_setup", "true")
-	//os.Setenv("SKIP_apply", "true")
-	//os.Setenv("SKIP_validate", "true")
-	//os.Setenv("SKIP_destroy", "true")
-
 	testFolder := test_structure.CopyTerraformFolderToTemp(t, "..", "examples/scheduled-lambda-job")
+	terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, testFolder)
+	defer terraform.Destroy(t, terraformOptions)
 
-	defer test_structure.RunTestStage(t, "destroy", func() {
-		terraformOptions := test_structure.LoadTerraformOptions(t, testFolder)
-		terraform.Destroy(t, terraformOptions)
-	})
+	terraform.InitAndApply(t, terraformOptions)
 
-	test_structure.RunTestStage(t, "setup", func() {
-		terraformOptions, awsRegion, _ := createBaseTerraformOptions(t, testFolder)
-		test_structure.SaveTerraformOptions(t, testFolder, terraformOptions)
-		test_structure.SaveString(t, testFolder, "region", awsRegion)
-	})
-
-	test_structure.RunTestStage(t, "apply", func() {
-		terraformOptions := test_structure.LoadTerraformOptions(t, testFolder)
-		terraform.InitAndApply(t, terraformOptions)
-	})
-
-	test_structure.RunTestStage(t, "validate", func() {
-		terraformOptions := test_structure.LoadTerraformOptions(t, testFolder)
-		awsRegion := test_structure.LoadString(t, testFolder, "region")
-		checkLogsForSuccessfulLambdaJobExecution(t, terraformOptions, awsRegion)
-	})
+	checkLogsForSuccessfulLambdaJobExecution(t, terraformOptions, awsRegion)
 }
 
 func TestScheduledLambdaJobCreateResourcesFalse(t *testing.T) {
@@ -66,11 +44,6 @@ func TestScheduledLambdaJobCreateResourcesFalse(t *testing.T) {
 
 func checkLogsForSuccessfulLambdaJobExecution(t *testing.T, terraformOptions *terraform.Options, awsRegion string) {
 	lambdaFunctionName := terraform.OutputRequired(t, terraformOptions, "function_name")
-	requireExpectedLogEntry(t, lambdaFunctionName, awsRegion, lambdaJobExpectedLogEntry)
-	requireExpectedLogEntry(t, lambdaFunctionName, awsRegion, fmt.Sprintf(`"uniqueID": "%s"`, lambdaFunctionName))
-}
-
-func requireExpectedLogEntry(t *testing.T, lambdaFunctionName, awsRegion, expectedLogEntry string) {
 	description := "Looking in CloudWatch Logs to see if the lambda job executed successfully"
 	maxRetries := 10
 	timeBetweenRetries := 30 * time.Second
@@ -89,13 +62,13 @@ func requireExpectedLogEntry(t *testing.T, lambdaFunctionName, awsRegion, expect
 			}
 
 			for _, entry := range entries {
-				if strings.Contains(entry, expectedLogEntry) {
+				if strings.Contains(entry, EXPECTED_LOG_ENTRY) {
 					return entry, nil
 				}
 			}
 		}
 
-		return "", fmt.Errorf("Did not find entry '%s' in CloudWatch Logs", expectedLogEntry)
+		return "", fmt.Errorf("Did not find entry '%s' in CloudWatch Logs", EXPECTED_LOG_ENTRY)
 	})
 }
 

@@ -2,16 +2,16 @@
 # CONFIGURE THE GLOBAL REGIONAL API GATEWAY SETTINGS
 # ---------------------------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------------------------------------------------
+# REQUIRE A SPECIFIC TERRAFORM VERSION OR HIGHER
+# This module has been updated with 0.12 syntax, which means it is no longer compatible with any versions below 0.12.
+# ----------------------------------------------------------------------------------------------------------------------
 
 terraform {
-  # This module is now only being tested with Terraform 1.1.x. However, to make upgrading easier, we are setting 1.0.0 as the minimum version.
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "< 4.0"
-    }
-  }
+  # This module is now only being tested with Terraform 1.0.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 1.0.x code.
+  required_version = ">= 0.12.26"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -50,23 +50,10 @@ data "aws_iam_policy_document" "api_gateway_iam_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "cloudwatch" {
-  count  = var.create_resources && local.use_inline_policies ? 1 : 0
+  count  = var.create_resources ? 1 : 0
   name   = "cloudwatch"
-  role   = aws_iam_role.cloudwatch[0].id
+  role   = aws_iam_role.cloudwatch.*.id[0]
   policy = data.aws_iam_policy_document.cloudwatch_logs.json
-}
-
-resource "aws_iam_role_policy_attachment" "cloudwatch" {
-  count      = var.create_resources && var.use_managed_iam_policies ? 1 : 0
-  role       = aws_iam_role.cloudwatch[0].id
-  policy_arn = aws_iam_policy.cloudwatch[0].arn
-}
-
-resource "aws_iam_policy" "cloudwatch" {
-  count       = var.create_resources && var.use_managed_iam_policies ? 1 : 0
-  name_prefix = "api-gateway-allow-cloudwatch"
-  description = "IAM Policy to allow API Gateway to access CloudWatch for reporting metrics and logs."
-  policy      = data.aws_iam_policy_document.cloudwatch_logs.json
 }
 
 data "aws_iam_policy_document" "cloudwatch_logs" {

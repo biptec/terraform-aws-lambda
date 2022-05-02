@@ -4,28 +4,20 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  # This module is now only being tested with Terraform 1.1.x. However, to make upgrading easier, we are setting 1.0.0 as the minimum version.
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "< 4.0"
-    }
-  }
+  # This module is now only being tested with Terraform 1.0.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 1.0.x code.
+  required_version = ">= 0.12.26"
 }
 
 # The datasource will actually be used only when referencing an existing IAM entity, otherwise we provide a dummy input
 # since `arn` attribute is required, and to avoid using `count`, which might have side effects
 data "aws_arn" "role" {
-  arn = (
-    var.existing_role_arn == null
-    ? "arn:aws:iam::123456789012:dummy"
-    : var.existing_role_arn
-  )
+  arn = local.create_iam_entities ? "arn:aws:iam::123456789012:dummy" : var.existing_role_arn
 }
 
 locals {
-  create_iam_entities = var.create_resources && var.existing_role_arn == null
+  create_iam_entities = var.existing_role_arn == null
   role_arn            = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].arn : var.existing_role_arn
   # The `aws_arn` datasource returns full resource name, which will have the `role/` prefix in case of IAM role - strip
   # it away, to make compatible with `aws_iam_role.id` attribute
@@ -39,15 +31,9 @@ locals {
 resource "aws_lambda_function" "function" {
   count = var.create_resources ? 1 : 0
 
-  depends_on = [
-    # We need this policy to be created before we try to create the lambda job, or you get an error about not having
-    # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC.
-    aws_iam_role_policy.network_interfaces_for_lambda,
-
-    # Make sure the CloudWatch Log Group is created before creating the function so that Lambda doesn't create a new
-    # one.
-    aws_cloudwatch_log_group.log_aggregation,
-  ]
+  # We need this policy to be created before we try to create the lambda job, or you get an error about not having
+  # the CreateNetworkInterface permission, which the lambda job needs to work within a VPC.
+  depends_on = [aws_iam_role_policy.network_interfaces_for_lamda]
 
   function_name = var.name
   description   = var.description
@@ -55,7 +41,7 @@ resource "aws_lambda_function" "function" {
 
   # When source_path is set and image_uri is not set, it indicates that the function should come from the local file path.
   filename         = local.use_local_file ? local.zip_file_path : null
-  source_code_hash = local.use_local_file && var.set_source_code_hash ? local.source_code_hash : null
+  source_code_hash = local.use_local_file ? local.source_code_hash : null
 
   # When source_path and image_uri are not set (null), it indicates that the function should come from S3.
   s3_bucket         = var.s3_bucket
@@ -74,9 +60,10 @@ resource "aws_lambda_function" "function" {
   memory_size  = var.memory_size
   kms_key_arn  = var.kms_key_arn
 
+
   reserved_concurrent_executions = var.reserved_concurrent_executions
 
-  role = local.role_arn
+  role = var.create_resources ? local.role_arn : null
 
   tags = var.tags
 
@@ -89,11 +76,8 @@ resource "aws_lambda_function" "function" {
     # variable.
     for_each = var.run_in_vpc ? ["use_vpc_config"] : []
     content {
-      subnet_ids = var.subnet_ids
-      security_group_ids = concat(
-        aws_security_group.lambda.*.id,
-        var.additional_security_group_ids,
-      )
+      subnet_ids         = var.subnet_ids
+      security_group_ids = aws_security_group.lambda.*.id
     }
   }
 
@@ -117,7 +101,7 @@ resource "aws_lambda_function" "function" {
 
   # The Lambda OCI image configurations.
   dynamic "image_config" {
-    for_each = (length(var.entry_point) != 0 || length(var.command) != 0 || var.working_directory != null) && local.use_docker_image ? ["once"] : []
+    for_each = local.use_docker_image ? ["once"] : []
     content {
       entry_point       = var.entry_point
       command           = var.command
@@ -160,31 +144,6 @@ locals {
   zip_file_path = var.skip_zip ? var.source_path : join("", data.archive_file.source_code.*.output_path)
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# OPTIONALLY CREATE A CLOUDWATCH LOG GROUP FOR THE LAMBDA JOB
-# ---------------------------------------------------------------------------------------------------------------------
-
-resource "aws_cloudwatch_log_group" "log_aggregation" {
-  count             = var.create_resources && var.should_create_cloudwatch_log_group ? 1 : 0
-  name              = "/aws/lambda/${var.name}"
-  retention_in_days = var.cloudwatch_log_group_retention_in_days
-  kms_key_id        = var.cloudwatch_log_group_kms_key_id
-  tags              = var.cloudwatch_log_group_tags
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# OPTIONALLY CREATE A CLOUDWATCH LOG SUBSCRIPTION FILTER FOR THE LAMBDA JOB
-# ---------------------------------------------------------------------------------------------------------------------
-resource "aws_cloudwatch_log_subscription_filter" "log_aggregation" {
-  count = var.create_resources && var.should_create_cloudwatch_log_group && var.cloudwatch_log_group_subscription_destination_arn != null ? 1 : 0
-
-  name            = "${aws_cloudwatch_log_group.log_aggregation[0].id}-subscription"
-  log_group_name  = aws_cloudwatch_log_group.log_aggregation[0].id
-  filter_pattern  = var.cloudwatch_log_group_subscription_filter_pattern
-  destination_arn = var.cloudwatch_log_group_subscription_destination_arn
-  role_arn        = var.cloudwatch_log_group_subscription_role_arn
-  distribution    = var.cloudwatch_log_group_subscription_distribution
-}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE A SECURITY GROUP FOR THE LAMBDA JOB
@@ -197,7 +156,7 @@ resource "aws_security_group" "lambda" {
   count = var.create_resources && var.run_in_vpc ? 1 : 0
 
   name        = "${var.name}-lambda"
-  description = var.security_group_description != null ? var.security_group_description : "Security group for the lambda function ${var.name}"
+  description = "Security group for the lambda function ${var.name}"
   vpc_id      = var.vpc_id
 
   tags = var.tags
@@ -221,15 +180,12 @@ resource "aws_security_group_rule" "allow_outbound_all" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role" "lambda" {
-  count                = local.create_iam_entities ? 1 : 0
-  name                 = var.iam_role_name == null ? var.name : var.iam_role_name
+  count                = var.create_resources && local.create_iam_entities ? 1 : 0
+  name                 = var.name
   assume_role_policy   = var.assume_role_policy == null ? data.aws_iam_policy_document.lambda_role.json : var.assume_role_policy
   permissions_boundary = var.lambda_role_permissions_boundary_arn
 
-  tags = merge(
-    var.iam_role_tags,
-    var.tags,
-  )
+  tags = var.tags
 }
 
 data "aws_iam_policy_document" "lambda_role" {
@@ -249,32 +205,10 @@ data "aws_iam_policy_document" "lambda_role" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy" "logging_for_lambda" {
-  count = (
-    local.create_iam_entities && local.use_inline_policies
-    ? 1 : 0
-  )
+  count  = var.create_resources && local.create_iam_entities ? 1 : 0
   name   = "${var.name}-logging"
-  role   = local.role_id
+  role   = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : null
   policy = data.aws_iam_policy_document.logging_for_lambda.json
-}
-
-resource "aws_iam_role_policy_attachment" "logging_for_lambda" {
-  count = (
-    local.create_iam_entities && var.use_managed_iam_policies
-    ? 1 : 0
-  )
-  role       = local.role_id
-  policy_arn = aws_iam_policy.logging_for_lambda[0].arn
-}
-
-resource "aws_iam_policy" "logging_for_lambda" {
-  count = (
-    local.create_iam_entities && var.use_managed_iam_policies
-    ? 1 : 0
-  )
-  name_prefix = "${var.name}-logging"
-  description = "IAM Policy to allow Lambda functions to log to CloudWatch Logs."
-  policy      = data.aws_iam_policy_document.logging_for_lambda.json
 }
 
 data "aws_iam_policy_document" "logging_for_lambda" {
@@ -287,7 +221,7 @@ data "aws_iam_policy_document" "logging_for_lambda" {
       "logs:PutLogEvents",
     ]
 
-    resources = ["arn:${data.aws_partition.current.partition}:logs:*:*:*"]
+    resources = ["arn:aws:logs:*:*:*"]
   }
 }
 
@@ -296,37 +230,15 @@ data "aws_iam_policy_document" "logging_for_lambda" {
 # These resources are only created if var.run_in_vpc is true.
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_iam_role_policy" "network_interfaces_for_lambda" {
-  count = (
-    local.create_iam_entities && var.run_in_vpc && local.use_inline_policies
-    ? 1 : 0
-  )
+resource "aws_iam_role_policy" "network_interfaces_for_lamda" {
+  count = var.create_resources && local.create_iam_entities && var.run_in_vpc ? 1 : 0
 
   name   = "${var.name}-network-interfaces"
-  role   = local.role_id
-  policy = data.aws_iam_policy_document.network_interfaces_for_lambda.json
+  role   = length(aws_iam_role.lambda) > 0 ? aws_iam_role.lambda[0].id : null
+  policy = data.aws_iam_policy_document.network_interfaces_for_lamda.json
 }
 
-resource "aws_iam_role_policy_attachment" "network_interfaces_for_lambda" {
-  count = (
-    local.create_iam_entities && var.run_in_vpc && var.use_managed_iam_policies
-    ? 1 : 0
-  )
-  role       = local.role_id
-  policy_arn = aws_iam_policy.network_interfaces_for_lambda[0].arn
-}
-
-resource "aws_iam_policy" "network_interfaces_for_lambda" {
-  count = (
-    local.create_iam_entities && var.run_in_vpc && var.use_managed_iam_policies
-    ? 1 : 0
-  )
-  name_prefix = "${var.name}-netiface"
-  description = "IAM Policy to allow Lambda functions manage Network Interfaces."
-  policy      = data.aws_iam_policy_document.network_interfaces_for_lambda.json
-}
-
-data "aws_iam_policy_document" "network_interfaces_for_lambda" {
+data "aws_iam_policy_document" "network_interfaces_for_lamda" {
   statement {
     effect = "Allow"
 
@@ -342,9 +254,3 @@ data "aws_iam_policy_document" "network_interfaces_for_lambda" {
     resources = ["*"]
   }
 }
-
-# Use this data source to lookup information about the current AWS partition in which Terraform is working.
-# This will return the identifier of the current partition (e.g., aws in AWS Commercial, aws-us-gov in AWS GovCloud,
-# aws-cn in AWS China).
-# https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
-data "aws_partition" "current" {}

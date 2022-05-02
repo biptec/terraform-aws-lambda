@@ -10,9 +10,7 @@ for the full details):
 * The execution timeout must not be higher than 30 seconds.
 * The function must be versioned in order to be a target for Cloudfront events.
 * The function must be deployed in the `us-east-1` region.
-* The function runtime must be one of:
-    - `nodejs10.x` or newer
-    - `python3.7` or newer
+* The function runtime must be `nodejs10.x` or `python3.7`.
 
 
 
@@ -20,9 +18,9 @@ for the full details):
 
 ## How do you use this module?
 
-* See the [root README](/README.md) for instructions on using Terraform modules.
-* See the [lambda-edge example](/examples/lambda-edge) folder for sample usage.
-* See [variables.tf](./variables.tf) for all the variables you can set on this module.
+* See the [root README](https://github.com/biptec/terraform-aws-lambda/blob/master/README.md) for instructions on using Terraform modules.
+* See the [lambda-edge example](https://github.com/biptec/terraform-aws-lambda/blob/master/examples/lambda-edge) folder for sample usage.
+* See [vars.tf](./vars.tf) for all the variables you can set on this module.
 
 The general idea is to:
 
@@ -81,10 +79,6 @@ resource "aws_lambda_permission" "with_sns" {
 This module deploys the Lambda function but doesn't create any CloudFront trigger. There are two ways to create those
 triggers:
 
-1. Using terraform. To link the Lambda@Edge function to the [s3-cloudfront module from
-   terraform-aws-static-assets](https://github.com/gruntwork-io/terraform-aws-static-assets/tree/master/modules/s3-cloudfront),
-   you can use the
-   [default_lambda_associations](https://github.com/gruntwork-io/terraform-aws-static-assets/blob/master/modules/s3-cloudfront/variables.tf#L308)
-   input variable.
+1. Using terraform (but support for this is currently not available in the CloudFront module).
 2. Manually from the AWS Console as described in the
    [Lambda@Edge documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html#lambda-edge-add-triggers)

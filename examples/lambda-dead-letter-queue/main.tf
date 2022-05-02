@@ -3,14 +3,10 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  # This module is now only being tested with Terraform 1.1.x. However, to make upgrading easier, we are setting 1.0.0 as the minimum version.
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "< 4.0"
-    }
-  }
+  # This module is now only being tested with Terraform 1.0.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 1.0.x code.
+  required_version = ">= 0.12.26"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -27,7 +23,7 @@ provider "aws" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "sqs" {
-  source = "git::git@github.com:gruntwork-io/terraform-aws-messaging.git//modules/sqs?ref=v0.7.2"
+  source = "git::git@github.com:biptec/terraform-aws-messaging.git//modules/sqs?ref=v0.3.2"
 
   name = var.name
 
@@ -40,7 +36,7 @@ module "sqs" {
 module "lambda_dlq" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
+  # source = "git::git@github.com:biptec/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
   source = "../../modules/lambda"
 
   name        = var.name

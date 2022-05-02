@@ -1,32 +1,29 @@
 defaults: &defaults
   machine:
     enabled: true
-    image: ubuntu-2004:202111-02
+    image: "ubuntu-1604:201903-01"
 env: &env
   environment:
-    GRUNTWORK_INSTALLER_VERSION: v0.0.38
-    TERRATEST_LOG_PARSER_VERSION: v0.40.6
-    MODULE_CI_VERSION: v0.46.1
-    TERRAFORM_VERSION: 1.1.7
+    GRUNTWORK_INSTALLER_VERSION: v0.0.30
+    TERRATEST_LOG_PARSER_VERSION: v0.30.12
+    MODULE_CI_VERSION: v0.29.1
+    TERRAFORM_VERSION: 1.0.3
     TERRAGRUNT_VERSION: NONE
     PACKER_VERSION: NONE
-    GOLANG_VERSION: 1.16
-    GO111MODULE: auto
+    GOLANG_VERSION: 1.13.8
 version: 2.0
 jobs:
   precommit:
     <<: *env
     docker:
-      - image: cimg/python:3.10.2
-    resource_class: small
+      - image: circleci/python:3.8.1
     steps:
       - checkout
-      - run: &install_gruntwork_tooling
+      - run:
           name: install dependencies
           command: |
             curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
             gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/terraform-aws-ci" --tag "${MODULE_CI_VERSION}"
-            gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "${TERRATEST_LOG_PARSER_VERSION}"
             configure-environment-for-gruntwork-module \
               --terraform-version ${TERRAFORM_VERSION} \
               --terragrunt-version NONE \
@@ -36,25 +33,33 @@ jobs:
       # execute automatically every time before you commit, ensuring the build never fails at this step!
       - run:
           command: |
-            pip install pre-commit
+            pip install pre-commit==1.21.0 cfgv==2.0.1 zipp==1.1.0 yapf
             go get golang.org/x/tools/cmd/goimports
             export GOPATH=~/go/bin && export PATH=$PATH:$GOPATH
             pre-commit install
             pre-commit run --all-files
   test aws:
-    <<: [*defaults, *env]
+    <<: *defaults
+    <<: *env
     steps:
       - checkout
-      - run:
-          <<: *install_gruntwork_tooling
+      - run: &install_gruntwork_tooling
+          name: install gruntwork tooling
+          command: |
+            curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
+            gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/terraform-aws-ci" --tag "${MODULE_CI_VERSION}"
+            gruntwork-install --binary-name "terratest_log_parser" --repo "https://github.com/gruntwork-io/terratest" --tag "${TERRATEST_LOG_PARSER_VERSION}"
+            configure-environment-for-gruntwork-module \
+              --terraform-version ${TERRAFORM_VERSION} \
+              --terragrunt-version ${TERRAGRUNT_VERSION} \
+              --packer-version ${PACKER_VERSION} \
+              --go-src-path ./test
       - run:
           name: run tests
-          # NOTE: we set a generous timeout here because destroying a VPC based lambda takes a long time due to
-          # https://aws.amazon.com/blogs/compute/update-issue-affecting-hashicorp-terraform-resource-deletions-after-the-vpc-improvements-to-aws-lambda/
           command: |
             mkdir -p /tmp/logs
-            run-go-tests --path test --timeout 90m | tee /tmp/logs/all.log
-          no_output_timeout: 5400s
+            run-go-tests --path test --timeout 1h | tee /tmp/logs/all.log
+          no_output_timeout: 3600s
       - run:
           command: terratest_log_parser --testlog /tmp/logs/all.log --outputdir /tmp/logs
           when: always

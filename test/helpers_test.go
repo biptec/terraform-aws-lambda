@@ -9,11 +9,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/lambda"
-	terraws "github.com/gruntwork-io/terratest/modules/aws"
-	"github.com/gruntwork-io/terratest/modules/logger"
-	"github.com/gruntwork-io/terratest/modules/random"
-	"github.com/gruntwork-io/terratest/modules/retry"
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	terraws "github.com/biptec/terratest/modules/aws"
+	"github.com/biptec/terratest/modules/logger"
+	"github.com/biptec/terratest/modules/random"
+	"github.com/biptec/terratest/modules/retry"
+	"github.com/biptec/terratest/modules/terraform"
 )
 
 const (

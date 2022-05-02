@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/logger"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
+	"github.com/biptec/terratest/modules/logger"
+	"github.com/biptec/terratest/modules/terraform"
+	test_structure "github.com/biptec/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 

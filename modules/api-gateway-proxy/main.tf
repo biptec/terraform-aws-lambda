@@ -7,13 +7,14 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
-  # This module is now only being tested with Terraform 1.1.x. However, to make upgrading easier, we are setting 1.0.0 as the minimum version.
-  required_version = ">= 1.0.0"
+  # This module is now only being tested with Terraform 1.0.x. We require at least version 0.15.1 or above
+  # because this module uses configuration_aliases, which were only added in Terraform 0.15.0, and we want the latest GPG keys, which were added in 0.15.1.
+  required_version = ">= 0.15.1"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 2.58, < 4.0"
+      version = ">= 2.58"
       # Edge API Gateway domains require ACM certs to be in us-east-1, so we need an aws provider alias that is
       # configured to the us-east-1 region when looking up an ACM cert for the domain.
       configuration_aliases = [aws.us_east_1]

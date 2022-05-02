@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
+	"github.com/biptec/terratest/modules/terraform"
+	test_structure "github.com/biptec/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 

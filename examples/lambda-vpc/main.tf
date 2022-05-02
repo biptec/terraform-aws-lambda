@@ -4,14 +4,10 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  # This module is now only being tested with Terraform 1.1.x. However, to make upgrading easier, we are setting 1.0.0 as the minimum version.
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "< 4.0"
-    }
-  }
+  # This module is now only being tested with Terraform 1.0.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 1.0.x code.
+  required_version = ">= 0.12.26"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -23,8 +19,7 @@ provider "aws" {
 }
 
 locals {
-  lambda_description = "An example of how to process images in S3 with Lambda"
-  fs_path            = "jenkins"
+  fs_path = "jenkins"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -34,17 +29,11 @@ locals {
 module "lambda_function" {
   # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
   # to a specific version of the modules, such as the following example:
-  # source = "git::git@github.com:gruntwork-io/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
+  # source = "git::git@github.com:biptec/terraform-aws-lambda.git//modules/lambda?ref=v1.0.8"
   source = "../../modules/lambda"
 
-  name = var.name
-  # This is a hack to force the lambda function's creation to depend upon the availability of the efs mount targets
-  # Without this hack, the targets may not be ready by the time the function attempts to access them, leading to an apply-time error
-  description = (
-    module.efs.mount_target_ids == null ?
-    local.lambda_description
-    : local.lambda_description
-  )
+  name        = var.name
+  description = "An example of how to process images in S3 with Lambda"
 
   source_path = "${path.module}/javascript"
   runtime     = "nodejs12.x"
@@ -60,7 +49,7 @@ module "lambda_function" {
   # lambda only supports one EFS / access point mount
   mount_to_file_system         = true
   file_system_mount_path       = var.efs_mount_path
-  file_system_access_point_arn = "arn:${data.aws_partition.current.partition}:elasticfilesystem:${var.aws_region}:${data.aws_caller_identity.current.account_id}:access-point/${module.efs.access_point_ids[local.fs_path]}"
+  file_system_access_point_arn = "arn:aws:elasticfilesystem:${var.aws_region}:${data.aws_caller_identity.current.account_id}:access-point/${module.efs.access_point_ids[local.fs_path]}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -83,7 +72,7 @@ resource "aws_security_group_rule" "allow_all_outbound" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "vpc" {
-  source = "git::git@github.com:gruntwork-io/terraform-aws-vpc.git//modules/vpc-app?ref=v0.17.1"
+  source = "git::git@github.com:biptec/terraform-aws-vpc.git//modules/vpc-app?ref=v0.6.0"
 
   vpc_name   = var.vpc_name
   aws_region = var.aws_region
@@ -95,19 +84,16 @@ module "vpc" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE AN EFS + ACCESS POINT
-# We will give the Lambda function access to this EFS. Note that in order for a Lambda function to mount an EFS
-# access point, it must be deployed inside a VPC, as we have done above.
+# We will give the Lambda function access to this EFS. Note that in order for a Lambda function to mount to an EFS,
+# it must be deployed inside a VPC, as we have done above.
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "efs" {
-  source = "git::git@github.com:gruntwork-io/terraform-aws-data-storage.git//modules/efs?ref=v0.16.2"
+  source = "git::git@github.com:biptec/terraform-aws-data-storage.git//modules/efs?ref=v0.16.2"
 
   name       = var.name
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.public_subnet_ids
-
-  # Allow the lambda function to access the EFS access point
-  allow_connections_from_security_groups = [module.lambda_function.security_group_id]
 
   efs_access_points = {
     jenkins = {
@@ -131,9 +117,3 @@ module "efs" {
 data "aws_caller_identity" "current" {}
 
 data "aws_availability_zones" "all" {}
-
-# Use this data source to lookup information about the current AWS partition in which Terraform is working.
-# This will return the identifier of the current partition (e.g., aws in AWS Commercial, aws-us-gov in AWS GovCloud,
-# aws-cn in AWS China).
-# https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
-data "aws_partition" "current" {}
