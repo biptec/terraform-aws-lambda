@@ -1,7 +1,7 @@
 # Lambda Keep Warm Example
 
 This folder shows an example of how to use the `keep-warm` module to keep your Lambda functions "warm" and avoid
-cold starts. See the [keep-warm module](/modules/keep-warm) for more info on cold starts.
+cold starts. See the [keep-warm module](https://github.com/biptec/terraform-aws-lambda/blob/v0.13.0/modules/keep-warm) for more info on cold starts.
 
 
 
