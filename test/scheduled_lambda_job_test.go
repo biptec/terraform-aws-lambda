@@ -8,10 +8,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	terraws "github.com/gruntwork-io/terratest/modules/aws"
-	"github.com/gruntwork-io/terratest/modules/retry"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
+	terraws "github.com/biptec/terratest/modules/aws"
+	"github.com/biptec/terratest/modules/retry"
+	"github.com/biptec/terratest/modules/terraform"
+	test_structure "github.com/biptec/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 

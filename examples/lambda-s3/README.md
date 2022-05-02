@@ -56,5 +56,5 @@ write it to disk:
 python python/test_harness.py --region us-east-1 --bucket lambda-s3-example-images-test --filename gruntwork-logo.png
 ```
 
-See also the [lambda-build example](/examples/lambda-build) to see how you can execute build and packaging steps for
+See also the [lambda-build example](https://github.com/biptec/terraform-aws-lambda/blob/master/examples/lambda-build) to see how you can execute build and packaging steps for
 your code before uploading it using Terraform.

@@ -17,13 +17,13 @@ see:
 
 ## How do you use this module?
 
-* See the [root README](/README.md) for instructions on using Terraform modules.
-* See the [lambda-keep-warm example](/examples/lambda-keep-warm) folder for sample usage.
+* See the [root README](https://github.com/biptec/terraform-aws-lambda/blob/master/README.md) for instructions on using Terraform modules.
+* See the [lambda-keep-warm example](https://github.com/biptec/terraform-aws-lambda/blob/master/examples/lambda-keep-warm) folder for sample usage.
 * See [vars.tf](./vars.tf) for all the variables you can set on this module.
 
 The basic idea is to:
 
-1. Deploy your Lambda functions using the [lambda module](/modules/lambda):
+1. Deploy your Lambda functions using the [lambda module](https://github.com/biptec/terraform-aws-lambda/blob/master/modules/lambda):
 
     ```hcl
     module "lambda_example" {

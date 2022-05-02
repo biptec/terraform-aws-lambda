@@ -9,8 +9,8 @@ you a way to run code on-demand in AWS without having to manage servers.
 
 ## How do you use this module?
 
-* See the [root README](/README.md) for instructions on using Terraform modules.
-* See the [lambda-s3 example](/examples/lambda-s3) folder for sample usage.
+* See the [root README](https://github.com/biptec/terraform-aws-lambda/blob/master/README.md) for instructions on using Terraform modules.
+* See the [lambda-s3 example](https://github.com/biptec/terraform-aws-lambda/blob/master/examples/lambda-s3) folder for sample usage.
 * See [vars.tf](./vars.tf) for all the variables you can set on this module.
 
 The general idea is to:
@@ -115,7 +115,7 @@ resource "aws_security_group_rule" "allow_all_outbound_to_vpc" {
 }
 ```
 
-Check out the [lambda-vpc example](/examples/lambda-vpc) for working sample code. Make sure to note the Known Issues
+Check out the [lambda-vpc example](https://github.com/biptec/terraform-aws-lambda/blob/master/examples/lambda-vpc) for working sample code. Make sure to note the Known Issues
 section in that example's README.
 
 ## How do you share Lambda functions across multiple AWS accounts?
@@ -147,5 +147,5 @@ If you want to have a central S3 bucket that you use as a repository for your La
     }
     ```
     `s3:GetObjectVersion` is only required if you want to use `s3 object versioning` when deploying `lambdas`. You also need to enable `bucket versioning` in such case.
-1. If you want to enable `encryption` for `S3 objects` you must use a customer master key, or CMK (see the [kms-master-key](https://github.com/gruntwork-io/terraform-aws-security/tree/master/modules/kms-master-key) module) rather than the default key, and ensure that both the `shared-services` account and all the other accounts (`dev`, `stage`, `prod`) have access to that CMK.
+1. If you want to enable `encryption` for `S3 objects` you must use a customer master key, or CMK (see the [kms-master-key](https://github.com/biptec/terraform-aws-security/tree/master/modules/kms-master-key) module) rather than the default key, and ensure that both the `shared-services` account and all the other accounts (`dev`, `stage`, `prod`) have access to that CMK.
 1. The IAM User or IAM Role which will be running `terraform apply` for the other accounts (`dev`, `stage`, `prod`) must also be explicitly granted access to the S3 bucket in (1) and the CMK in (2).

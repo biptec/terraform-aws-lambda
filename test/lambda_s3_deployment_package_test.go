@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/logger"
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/biptec/terratest/modules/logger"
+	"github.com/biptec/terratest/modules/terraform"
 )
 
 func TestLambdaS3DeploymentPackage(t *testing.T) {

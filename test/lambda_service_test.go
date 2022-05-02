@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
-	"github.com/gruntwork-io/terratest/modules/shell"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
+	http_helper "github.com/biptec/terratest/modules/http-helper"
+	"github.com/biptec/terratest/modules/shell"
+	"github.com/biptec/terratest/modules/terraform"
+	test_structure "github.com/biptec/terratest/modules/test-structure"
 )
 
 const (
