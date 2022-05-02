@@ -9,8 +9,8 @@ you a way to run code on-demand in AWS without having to manage servers.
 
 ## How do you use this module?
 
-* See the [root README](/README.md) for instructions on using Terraform modules.
-* See the [lambda-s3 example](/examples/lambda-s3) folder for sample usage.
+* See the [root README](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.2/README.md) for instructions on using Terraform modules.
+* See the [lambda-s3 example](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.2/examples/lambda-s3) folder for sample usage.
 * See [variables.tf](./variables.tf) for all the variables you can set on this module.
 
 The general idea is to:
@@ -115,7 +115,7 @@ resource "aws_security_group_rule" "allow_all_outbound_to_vpc" {
 }
 ```
 
-Check out the [lambda-vpc example](/examples/lambda-vpc) for working sample code. Make sure to note the Known Issues
+Check out the [lambda-vpc example](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.2/examples/lambda-vpc) for working sample code. Make sure to note the Known Issues
 section in that example's README.
 
 ## How do you share Lambda functions across multiple AWS accounts?
