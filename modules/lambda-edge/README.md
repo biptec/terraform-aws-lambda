@@ -20,8 +20,8 @@ for the full details):
 
 ## How do you use this module?
 
-* See the [root README](/README.md) for instructions on using Terraform modules.
-* See the [lambda-edge example](/examples/lambda-edge) folder for sample usage.
+* See the [root README](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.5/README.md) for instructions on using Terraform modules.
+* See the [lambda-edge example](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.5/examples/lambda-edge) folder for sample usage.
 * See [variables.tf](./variables.tf) for all the variables you can set on this module.
 
 The general idea is to:
