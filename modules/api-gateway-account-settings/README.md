@@ -17,7 +17,7 @@ The corresponding screen from the AWS Console is shown below:
 
 ## Quick start
 
-Check out the [examples](/examples) for sample code that demonstrates how to use this module.
+Check out the [examples](https://github.com/biptec/terraform-aws-lambda/blob/v0.18.4/examples) for sample code that demonstrates how to use this module.
 
 ## How do you use this module?
 
